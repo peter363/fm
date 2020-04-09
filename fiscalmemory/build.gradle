@@ -1,0 +1,58 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 28
+
+
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+        ndk{
+            moduleName "FiscalMemory"  //设置库(so)文件名称
+            abiFilters "armeabi-v7a" , "arm64-v8a", "x86", "x86_64"
+            ldLibs "log"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path file('src/main/jni/Android.mk')
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
+
+task makeJar(type:Copy) {
+    //删除存在的jar
+    delete "build/lib/FiscalMemory.jar"
+    //设置拷贝文件
+    from("build/intermediates/bundles/release")
+    //打进jar后文件目录
+    into("build/libs/")
+    //将classes.jar放入build/libs目录下
+    //include,exclude参数来设置过滤
+    include("classes.jar")
+    //重命名为test.jar
+    rename("classes.jar","FiscalMemory.jar")
+}
+makeJar.dependsOn(build)

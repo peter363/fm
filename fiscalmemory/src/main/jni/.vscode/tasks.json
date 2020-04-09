@@ -1,0 +1,20 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "make"
+            // "command": "g++",
+            // "args": [
+            //     "-g",
+            //     "-DDEBUG_PC_MONITOR",
+            //     "main.cpp", "SerialMonitor.cpp", "ProtocolParser.cpp", "Serial.cpp", "OtpMonitor.cpp", "Crc.cpp", "Configuration.cpp",
+            //     "-o",
+            //     "FmTest"
+            // ]
+        }
+    ]
+}
