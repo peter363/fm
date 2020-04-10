@@ -1,14 +1,12 @@
 package com.FisNano.serialdemo;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import com.FisNano.FiscalMemory;
-import com.FisNano.FiscalMemory;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import com.FisNano.ZReportEntry;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import android.util.Log;
 import android.view.View;
@@ -20,10 +18,11 @@ import android.widget.TextView;
 import android.content.Context;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 //import android.hardware.SerialManager;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     static String TAG = "FiscalMem";
 
     Button m_OpenBtn, m_CloseBtn;
@@ -34,27 +33,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
 
-        m_ConsoleText = findViewById(R.id.LogText);
-        m_OpenBtn = findViewById(R.id.btn_open);
-        m_CloseBtn = findViewById(R.id.btn_close);
-        m_ScrollView = findViewById(R.id.up_scrollview);
+        m_ConsoleText = (TextView) findViewById(R.id.LogText);
+        m_OpenBtn = (Button) findViewById(R.id.btn_open);
+        m_CloseBtn = (Button) findViewById(R.id.btn_close);
+        m_ScrollView = (ScrollView) findViewById(R.id.up_scrollview);
 
-//        FloatingActionButton fab = findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
 
         Context context = getApplicationContext();
 //        SerialManager mSerialManager = (SerialManager) getSystemService("serial");
         m_FiscalFmemory = new FiscalMemory(context);
+
     }
 
 
@@ -89,31 +80,30 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
     /**
      * Ascii转换为字符串
+     *
      * @param value
      * @return
      */
     public static String AsciiToString(byte[] value) throws UnsupportedEncodingException {
-        return new String(value,"ISO-8859-1");
+        return new String(value, "ISO-8859-1");
     }
 
-    public void onClick(View v){
+    public void onClick(View v) {
         int ret;
         String OutStr = "";
         Log.d(TAG, "V.id = " + v.getId());
-        switch(v.getId())
-        {
+        switch (v.getId()) {
             case R.id.btn_open:
                 m_ConsoleText.setText(m_ConsoleText.getText() + "Opening..." + "\r\n");
                 m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
                 OutStr = "Open FiscalFmemory: ";
                 boolean result = m_FiscalFmemory.Open();
-                if(result)
-                {
+                if (result) {
                     OutStr += "Success";
-                }else
-                {
+                } else {
                     OutStr += "Fail";
                 }
                 break;
@@ -127,41 +117,35 @@ public class MainActivity extends AppCompatActivity {
                 OutStr = "Write Test FiscalFmemory\r\n";
                 OutStr = "Write Test SetFiscalCode:";
                 ret = m_FiscalFmemory
-                        .SetFiscalCode(new byte[]{ 'F', 'i','s','c','a','l','C','o','d','e','1','2','3','4','5' });
+                        .SetFiscalCode(new byte[]{'F', 'i', 's', 'c', 'a', 'l', 'C', 'o', 'd', 'e', '1', '2', '3', '4', '5'});
                 OutStr += (ret == FiscalMemory.CMD_OK) ? "Success" : "Fail";
 
-                ret = m_FiscalFmemory.SetFiscalNum(new byte[]{ 'F', 'i','s','c','a','l','N','u','m','3','3','2','3','4','5' });
+                ret = m_FiscalFmemory.SetFiscalNumber(new byte[]{'F', 'i', 's', 'c', 'a', 'l', 'N', 'u', 'm', '3', '3', '2', '3', '4', '5'});
                 OutStr += (ret == FiscalMemory.CMD_OK) ? "Success" : "Fail";
 
                 break;
 
             case R.id.btn_read:
-                try
-                {
+                try {
                     String mGetFirmwareInfo = m_FiscalFmemory.GetFirmwareInfo();
                     byte[] fis = m_FiscalFmemory.GetFiscalCode();
-                    if(fis != null)
-                    {
+                    if (fis != null) {
                         OutStr += "GetFiscalCode " + AsciiToString(fis) + "\r\n";
                         Log.d(TAG, "GetFiscalCode " + AsciiToString(fis));
                     }
-                    byte[] fisnum = m_FiscalFmemory.GetFiscalNum();
-                    if(fisnum != null)
-                    {
+                    byte[] fisnum = m_FiscalFmemory.GetFiscalNumber();
+                    if (fisnum != null) {
                         OutStr += "GetFiscalNum " + AsciiToString(fisnum) + "\r\n";
                         Log.d(TAG, "GetFiscalNum " + AsciiToString(fisnum));
                     }
-                    if(mGetFirmwareInfo != null)
-                    {
+                    if (mGetFirmwareInfo != null) {
                         OutStr += "FirmwareInfo is " + mGetFirmwareInfo + "\r\n";
                         Log.d(TAG, "FirmwareInfo is " + mGetFirmwareInfo);
-                    }else
-                    {
+                    } else {
                         OutStr += "Test Fail\r\n";
                         Log.e(TAG, "Test Fail");
                     }
-                }catch (IllegalArgumentException | UnsupportedEncodingException e)
-                {
+                } catch (IllegalArgumentException | UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
                 break;
@@ -169,11 +153,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btn_erase:
                 OutStr = "Erase FiscalFmemory: ";
                 ret = m_FiscalFmemory.EraseCard();
-                if(ret >= 0)
-                {
+                if (ret >= 0) {
                     OutStr += "Success";
-                }else
-                {
+                } else {
                     OutStr += "Fail " + ret;
                 }
                 break;
@@ -182,11 +164,79 @@ public class MainActivity extends AppCompatActivity {
                 OutStr = "SoftwareReset FiscalFmemory: ";
                 ret = m_FiscalFmemory.SoftwareReset();
                 OutStr += (ret == FiscalMemory.CMD_OK) ? "Success" : "Fail";
+                break;
+            case R.id.btn_write_z_report:
 
-            default:return;
+                ZReportEntry zReportEntry = new ZReportEntry();
+                zReportEntry.setSales_total(445566);
+                zReportEntry.setSales_tax(778899);
+                zReportEntry.setYear(2059);
+                zReportEntry.setMonth(5);
+                zReportEntry.setDay(6);
+                zReportEntry.setHour(2);
+                zReportEntry.setMinute(5);
+                short serialNumber = 12345;
+                zReportEntry.setSerial_number(serialNumber);
+
+                byte[] zReportData = zReportEntry.getZReportData();
+
+                android.util.Log.e(TAG, "[zys-->] write:" + bytes2BinaryStr(zReportData));
+
+                ret = m_FiscalFmemory.SetEntryData(zReportData);
+
+                OutStr += (ret == FiscalMemory.CMD_OK) ? "Success" : "Fail";
+
+                break;
+
+            case R.id.btn_read_z_report:
+
+//                int number = m_FiscalFmemory.GetNumberOfEntries();
+//                OutStr += "GetNumberOfEntries:" + number;
+
+                byte[] bytes = m_FiscalFmemory.GetEntryData(0);
+
+                android.util.Log.e(TAG, "[zys-->] read:" + bytes2BinaryStr(bytes));
+
+                ZReportEntry zReportEntry1 = ZReportEntry.parseEntry(bytes);
+
+                OutStr += zReportEntry1.toString();
+
+
+//                long totalsum = m_FiscalFmemory.GetDailySalesTotalSum();
+//                long taxsum = m_FiscalFmemory.GetDailySalesTaxSum();
+//
+//                OutStr += "totalsum:" + totalsum + ", taxsum:" + taxsum;
+
+                break;
+
+            default:
+                return;
         }
 
         m_ConsoleText.setText(m_ConsoleText.getText() + OutStr + "\r\n");
         m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
     }
+
+    public static String bytes2BinaryStr(byte[] bArray) {
+        String outStr = "";
+        int pos = 0;
+        for (byte b : bArray) {
+            //高四位
+            pos = (b & 0xF0) >> 4;
+            outStr += binaryArray[pos];
+            //低四位
+            pos = b & 0x0F;
+            outStr += binaryArray[pos];
+
+            outStr += " ";
+        }
+        return outStr;
+
+    }
+
+    private static String[] binaryArray =
+            {"0000", "0001", "0010", "0011",
+                    "0100", "0101", "0110", "0111",
+                    "1000", "1001", "1010", "1011",
+                    "1100", "1101", "1110", "1111"};
 }

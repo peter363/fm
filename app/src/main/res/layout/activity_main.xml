@@ -1,84 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:orientation="vertical"
-	tools:layout_editor_absoluteX="1dp"
-	tools:layout_editor_absoluteY="1dp"
-	tools:context=".MainActivity">>
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-	<ScrollView
-		android:id="@+id/up_scrollview"
-		android:layout_width="match_parent"
-		android:layout_height="0px"
-		android:layout_weight="1"
-		android:focusable="true"
-		android:focusableInTouchMode="true">
+    <ScrollView
+        android:id="@+id/up_scrollview"
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="1"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
 
-		<TextView
-			android:id="@+id/LogText"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_marginTop="25dp"
-			android:text=""
-			android:textSize="12sp" />
-	</ScrollView>
-<!--
-	<ListView
--->
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="0px"
-		android:layout_weight="1"
-		android:orientation="vertical"
-		tools:layout_editor_absoluteX="1dp"
-		tools:layout_editor_absoluteY="1dp">
+        <TextView
+            android:id="@+id/LogText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="12sp" />
+    </ScrollView>
 
-		<Button
-			android:id="@+id/btn_open"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Open" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="1dp"
+        tools:layout_editor_absoluteY="1dp">
 
-		<Button
-			android:id="@+id/btn_close"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Close" />
+        <Button
+            android:id="@+id/btn_open"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="Open" />
 
-		<Button
-			android:id="@+id/btn_write"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Write" />
-			
-		<Button
-			android:id="@+id/btn_read"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Read" />	
-			
-		<Button
-			android:id="@+id/btn_erase"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Erase" />	
+        <Button
+            android:id="@+id/btn_close"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="Close" />
 
-		<Button
-			android:id="@+id/btn_reset"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Reset" />				
-<!--	</ListView> -->
-		</LinearLayout>
+        <Button
+            android:id="@+id/btn_write"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="Write" />
+
+        <Button
+            android:id="@+id/btn_read"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="Read" />
+
+        <Button
+            android:id="@+id/btn_erase"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="Erase" />
+
+        <Button
+            android:id="@+id/btn_reset"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="Reset" />
+
+        <Button
+            android:id="@+id/btn_write_z_report"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="Write Z Report" />
+
+        <Button
+            android:id="@+id/btn_read_z_report"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="Read Z Report" />
+        <!--	</ListView> -->
+    </LinearLayout>
 </LinearLayout>

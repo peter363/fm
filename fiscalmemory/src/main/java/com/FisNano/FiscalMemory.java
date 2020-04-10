@@ -3,6 +3,7 @@ package com.FisNano;
 import java.io.IOError;
 import java.io.IOException;
 import java.util.Date;
+
 import android.content.Context;
 //import android.hardware.SerialManager;
 //import android.hardware.SerialPort;
@@ -16,21 +17,19 @@ public class FiscalMemory {
     static {
         System.loadLibrary("FiscalMemory");
     }
+
     private static final String TAG = "FiscalMemory";
 
     /**
      * 构造函数
-     *
      */
     public FiscalMemory(Context context) {
 //        SerialInit(mSerialManager);
 //        OpenDevice();
     }
 
-    public boolean Open()
-    {
-        if(OpenDevice() >= 0)
-        {
+    public boolean Open() {
+        if (OpenDevice() >= 0) {
             Log.d(TAG, "Open Serial Success");
             return true;
         }
@@ -39,48 +38,40 @@ public class FiscalMemory {
         return false;
     }
 
-    public void Close()
-    {
+    public void Close() {
         Log.d(TAG, "Close Serial");
         CloseDevie();
     }
 
-    public void Test(){
-        SetFiscalCode(new byte[]{ 'F', 'i','s','c','a','l','C','o','d','e','1','2','3','4','5' });
-        try
-        {
+    public void Test() {
+        SetFiscalCode(new byte[]{'F', 'i', 's', 'c', 'a', 'l', 'C', 'o', 'd', 'e', '1', '2', '3', '4', '5'});
+        try {
             String mGetFirmwareInfo = GetFirmwareInfo();
             byte[] fis = GetFiscalCode();
-            if(fis != null)
-            {
+            if (fis != null) {
                 Log.d(TAG, "GetFiscalCode " + new String(fis));
             }
-            if(mGetFirmwareInfo != null)
-            {
+            if (mGetFirmwareInfo != null) {
                 Log.d(TAG, "FirmwareInfo is " + mGetFirmwareInfo);
-            }else
-            {
+            } else {
                 Log.e(TAG, "Test Fail");
             }
-        }catch (IllegalArgumentException e)
-        {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
     }
 
     /* This Method Should be hide in Release Version */
-    public int EraseCard()
-    {
+    public int EraseCard() {
         return ClearCompleteCard();
     }
 
-    public int SetDailySalesTotalSumRangeByDateTime(Date start, Date end)
-    {
+    public int SetDailySalesTotalSumRangeByDateTime(Date start, Date end) {
         long start_date_val = start.getMinutes()
-                                + start.getHours() * 60
-                                + start.getDay() * 24 * 60
-                                + start.getMonth() * 24 * 60 * 31
-                                + start.getYear() * 24 * 60 * 31 * 12;
+                + start.getHours() * 60
+                + start.getDay() * 24 * 60
+                + start.getMonth() * 24 * 60 * 31
+                + start.getYear() * 24 * 60 * 31 * 12;
 
         long end_date_val = end.getMinutes()
                 + end.getHours() * 60
@@ -92,9 +83,9 @@ public class FiscalMemory {
     }
 
 
-
 //    private SerialPort mSerialPort;
 //    private SerialManager mSerialManager;
+
     /**
      * 本地JNI层函数.打开串口设备.该函数的定义主体在 jni/serial_port.c文件中.
      *
@@ -105,7 +96,7 @@ public class FiscalMemory {
     /**
      * 本地JNI层函数.关闭串口设备.该函数的定义主体在 jni/serial_port.c文件中.
      *
-     * @return 成功关闭返回true,否则返回false.
+     * @return 成功关闭返回true, 否则返回false.
      */
     public native boolean CloseDevie();
 
@@ -114,22 +105,30 @@ public class FiscalMemory {
      *    Operation for Hardware        *
      ************************************/
     public native String GetFirmwareInfo();
+
     public native int ClearCompleteCard();
+
     public native int SoftwareReset();
 
     /************************************
-    *    Operation for ConfigInfo       *
-    ************************************/
-    public native int SetFiscalNum(byte[] FiscalNum);
+     *    Operation for ConfigInfo       *
+     ************************************/
+    public native int SetFiscalNumber(byte[] FiscalNum);
+
     public native int SetFiscalCode(byte[] FiscalCode);
+
     public native byte[] GetFiscalCode();
-    public native byte[] GetFiscalNum();
+
+    public native byte[] GetFiscalNumber();
+
     public native int SetMode(boolean EnableUserMode);
-//    private native boolean GetFiscalNumberStatus();
+
+    //    private native boolean GetFiscalNumberStatus();
 //    private native boolean GetFiscalCodeStatus();
 //    private native boolean GetFiscalRevolvingAmountStatus();
     public native boolean GetFullStatus();
 //    private native void SetFullStatus();
+
     /************************************
      *    Operation for Entry           *
      ************************************/
@@ -148,21 +147,28 @@ public class FiscalMemory {
     /* Read Entry from EntryIndex */
     public native byte[] GetEntryData(int Num);
 
+    public native int SetEntryData(byte[] entryData);
+
     public native int SetFiscalRevolingAmount();
+
     public native int GetFiscalRevolingAmount();
 
     /************************************
      *    Operation for DailyInfo       *
      ************************************/
     public native long GetDailySalesTotalSum();
+
     public native int SetDailySalesTotalSumRangeByIndex(int start_index, int end_idx);
+
     public native int SetDailySalesTotalSumRangeByDateTime(long start_date, long end_date);
+
     public native long GetDailySalesTotalSumRange();
 
     /************************************
      *    Operation for DailyTaxInfo       *
      ************************************/
     public native long GetDailySalesTaxSum();
+
     public native long GetDailySalesTaxSumRange();
 
     // Error Codes

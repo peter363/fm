@@ -13,7 +13,7 @@ extern "C" {
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_OpenDevice
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -21,7 +21,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_OpenDevice
  * Signature: ()Z
  */
 JNIEXPORT jboolean JNICALL Java_com_FisNano_FiscalMemory_CloseDevie
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -29,7 +29,7 @@ JNIEXPORT jboolean JNICALL Java_com_FisNano_FiscalMemory_CloseDevie
  * Signature: ()[B
  */
 JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetFiscalCode
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -37,22 +37,22 @@ JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetFiscalCode
  * Signature: ([B)I
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalCode
-  (JNIEnv *, jobject, jbyteArray);
+        (JNIEnv *, jobject, jbyteArray);
 
 /*
  * Class:     com_FisNano_FiscalMemory
  * Method:    GetFiscalNum
  * Signature: ()[B
  */
-JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetFiscalNum(JNIEnv * env, jobject self);
+JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetFiscalNumber(JNIEnv *env, jobject self);
 
 /*
  * Class:     com_FisNano_FiscalMemory
  * Method:    SetFiscalNum
  * Signature: ([B)I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalNum
-  (JNIEnv *, jobject, jbyteArray);
+JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalNumber
+        (JNIEnv *, jobject, jbyteArray);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -60,7 +60,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalNum
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SendDataOfEntry
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -68,7 +68,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SendDataOfEntry
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetNumberOfEntries
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -76,7 +76,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetNumberOfEntries
  * Signature: (I)I
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetEntryIndex
-  (JNIEnv *, jobject, jint);
+        (JNIEnv *, jobject, jint);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -84,7 +84,10 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetEntryIndex
  * Signature: ()[B
  */
 JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetEntryData
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
+
+JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetEntryData
+        (JNIEnv *, jobject, jbyteArray);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -92,7 +95,7 @@ JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetEntryData
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetFreeEntries
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -100,7 +103,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetFreeEntries
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_ClearCompleteCard
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -108,7 +111,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_ClearCompleteCard
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SoftwareReset
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -116,7 +119,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SoftwareReset
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalRevolingAmount
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -124,14 +127,15 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalRevolingAmount
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetFiscalRevolingAmount
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
  * Method:    SetMode
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetMode(JNIEnv *env, jobject thiz, jboolean enable_user_mode);
+JNIEXPORT jint JNICALL
+Java_com_FisNano_FiscalMemory_SetMode(JNIEnv *env, jobject thiz, jboolean enable_user_mode);
 
 
 /*
@@ -140,7 +144,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetMode(JNIEnv *env, jobjec
  * Signature: ()[B
  */
 JNIEXPORT jstring JNICALL Java_com_FisNano_FiscalMemory_GetFirmwareInfo
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -148,7 +152,7 @@ JNIEXPORT jstring JNICALL Java_com_FisNano_FiscalMemory_GetFirmwareInfo
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTotalSum
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -156,7 +160,7 @@ JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTotalSum
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTaxSum
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -164,7 +168,7 @@ JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTaxSum
  * Signature: (IJ)Z
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetDailySalesTotalSumRangeByIndex
-  (JNIEnv *, jobject, jint, jint);
+        (JNIEnv *, jobject, jint, jint);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -172,7 +176,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetDailySalesTotalSumRangeB
  * Signature: (Ljava/util/Date;J)Z
  */
 JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetDailySalesTotalSumRangeByDateTime
-  (JNIEnv *, jobject, jlong, jlong);
+        (JNIEnv *, jobject, jlong, jlong);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -180,7 +184,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetDailySalesTotalSumRangeB
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTotalSumRange
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
@@ -188,7 +192,7 @@ JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTotalSumRange
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTaxSumRange
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory
