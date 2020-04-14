@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">SerialDemo</string>
     <string name="action_settings">Settings</string>
+
+    <string name="fmt_date">%1$d,%2$d,%3$d</string>
+    <string name="fmt_time">%1$d,%2$d</string>
 </resources>

@@ -64,9 +64,9 @@ dependencies {
     //provided fileTree(include: ['*.jar'], dir: 'systemjar')
     compileOnly files('libs/framework.jar')
 //    compile files('FiscalMemory')
-//    implementation project(path: ':fiscalmemory')
-    debugImplementation project(path: ':fiscalmemory') //debug 版本直接引用本地项目
-    releaseImplementation files('libs/fiscalmemory-release.aar')   //release 版本引用远程版本用来最终测试发现问题
+    implementation project(path: ':fiscalmemory')
+//    debugImplementation project(path: ':fiscalmemory') //debug 版本直接引用本地项目
+//    releaseImplementation files('libs/fiscalmemory-release.aar')   //release 版本引用远程版本用来最终测试发现问题
 }
 
 preBuild {

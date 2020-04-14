@@ -1,84 +1,395 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:orientation="vertical"
-	tools:layout_editor_absoluteX="1dp"
-	tools:layout_editor_absoluteY="1dp"
-	tools:context=".MainActivity">>
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-	<ScrollView
-		android:id="@+id/up_scrollview"
-		android:layout_width="match_parent"
-		android:layout_height="0px"
-		android:layout_weight="1"
-		android:focusable="true"
-		android:focusableInTouchMode="true">
+    <ScrollView
+        android:id="@+id/up_scrollview"
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="1"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
 
-		<TextView
-			android:id="@+id/LogText"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_marginTop="25dp"
-			android:text=""
-			android:textSize="12sp" />
-	</ScrollView>
-<!--
-	<ListView
--->
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="0px"
-		android:layout_weight="1"
-		android:orientation="vertical"
-		tools:layout_editor_absoluteX="1dp"
-		tools:layout_editor_absoluteY="1dp">
+        <TextView
+            android:id="@+id/LogText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="12sp" />
+    </ScrollView>
 
-		<Button
-			android:id="@+id/btn_open"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Open" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="300dip">
 
-		<Button
-			android:id="@+id/btn_close"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Close" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-		<Button
-			android:id="@+id/btn_write"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Write" />
-			
-		<Button
-			android:id="@+id/btn_read"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Read" />	
-			
-		<Button
-			android:id="@+id/btn_erase"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Erase" />	
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-		<Button
-			android:id="@+id/btn_reset"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:onClick="onClick"
-			android:text="Reset" />				
-<!--	</ListView> -->
-		</LinearLayout>
+                <Button
+                    android:id="@+id/btn_open"
+                    android:layout_width="1dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="Open" />
+
+                <Button
+                    android:id="@+id/btn_close"
+                    android:layout_width="1dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="Close" />
+
+                <Button
+                    android:id="@+id/btn_erase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onClick"
+                    android:text="Erase" />
+
+                <Button
+                    android:id="@+id/btn_setmode"
+                    android:layout_width="1dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="SetMode" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_read_firmwareinfo"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="Read Firmware Info" />
+
+                <Button
+                    android:id="@+id/btn_getfullstatus"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="GetFullStatus" />
+
+                <Button
+                    android:id="@+id/btn_getfreeentries"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="GetFreeEntries" />
+
+                <Button
+                    android:id="@+id/btn_getnumberofentries"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="Z Report Number" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@android:color/holo_red_dark" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/et_fiscalcode"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Fiscal Code"
+                    android:maxLength="15"
+                    android:maxLines="1" />
+
+                <Button
+                    android:id="@+id/btn_write_fiscal_code"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onClick"
+                    android:text="Write Fiscal Code And Num" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/et_fiscalnum"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Fiscal Number"
+                    android:maxLength="15"
+                    android:maxLines="1" />
+
+                <Button
+                    android:id="@+id/btn_write_fiscal_num"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onClick"
+                    android:text="Write Fiscal Code And Num" />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_read_fiscal_code_and_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClick"
+                android:text="Read Fiscal Code And Num" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@android:color/holo_red_dark" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/et_sales_total_tax"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="total,tax,Serial Num"
+                    android:maxLines="1" />
+
+                <TextView
+                    android:id="@+id/tv_date"
+                    android:layout_width="0dip"
+                    android:layout_height="40dip"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="Select Date"
+                    android:onClick="onClick" />
+
+                <TextView
+                    android:id="@+id/tv_time"
+                    android:layout_width="0dip"
+                    android:layout_height="40dip"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="Select Time"
+                    android:onClick="onClick" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_write_z_report"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="Write Z Report" />
+
+                <Button
+                    android:id="@+id/btn_read_z_report"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="Read Z Report" />
+
+                <Button
+                    android:id="@+id/btn_get_daily_sales_totalsum"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="GetDailySalesTotalSum" />
+
+                <Button
+                    android:id="@+id/btn_getdailysalestaxsum"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="GetDailySalesTaxSum" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@android:color/holo_red_dark" />
+
+            <EditText
+                android:id="@+id/et_revolving_amount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Revolving Amount"
+                android:maxLength="15"
+                android:maxLines="1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_set_revolving_amount"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="Set Revolving Amount" />
+
+                <Button
+                    android:id="@+id/btn_get_revolving_amount"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="Get Revolving Amount" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@android:color/holo_red_dark" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/et_start_to_end_index"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:hint="start_index,end_index"
+                    android:maxLines="1" />
+
+                <LinearLayout
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:id="@+id/tv_dailysales_date_start"
+                            android:layout_width="0dip"
+                            android:layout_height="40dip"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:hint="Date Start"
+                            android:onClick="onClick" />
+
+                        <TextView
+                            android:id="@+id/tv_dailysales_time_start"
+                            android:layout_width="0dip"
+                            android:layout_height="40dip"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:hint="Date End"
+                            android:onClick="onClick" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="-" />
+
+                    <LinearLayout
+                        android:layout_width="0dip"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <TextView
+                            android:id="@+id/tv_dailysales_date_end"
+                            android:layout_width="0dip"
+                            android:layout_height="40dip"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:hint="Date Start"
+                            android:onClick="onClick" />
+
+                        <TextView
+                            android:id="@+id/tv_dailysales_time_end"
+                            android:layout_width="0dip"
+                            android:layout_height="40dip"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:hint="Date End"
+                            android:onClick="onClick" />
+
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_getdailysalestotalsumrange"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="GetDailySalesTotalSumRange" />
+
+                <Button
+                    android:id="@+id/btn_getdailysalestaxsumrange"
+                    android:layout_width="0dip"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:onClick="onClick"
+                    android:text="GetDailySalesTaxSumRange" />
+            </LinearLayout>
+
+
+        </LinearLayout>
+    </ScrollView>
+
 </LinearLayout>

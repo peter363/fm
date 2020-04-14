@@ -563,6 +563,8 @@ void Configuration::SetEntry(const uint8_t *data, int data_len) {
             m_number_of_entries_user_mode++;
         }
     }
+
+    LOGE("[zys-->] m_number_of_entries_factory_mode:%d", m_number_of_entries_factory_mode);
 }
 
 
