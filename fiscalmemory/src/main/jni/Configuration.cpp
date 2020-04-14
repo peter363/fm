@@ -348,6 +348,7 @@ void Configuration::SetFiscalRevolvingAmount(const uint8_t *data, int data_len) 
     int cnt;
     uint8_t tmp[Z_REPORT_ENTRY_SIZE];
 
+
     // limit entry size
     cnt = min(data_len, Z_REPORT_ENTRY_SIZE);
 
@@ -562,6 +563,8 @@ void Configuration::SetEntry(const uint8_t *data, int data_len) {
             m_number_of_entries_user_mode++;
         }
     }
+
+    LOGE("[zys-->] m_number_of_entries_factory_mode:%d", m_number_of_entries_factory_mode);
 }
 
 

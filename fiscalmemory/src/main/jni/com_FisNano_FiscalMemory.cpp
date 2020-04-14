@@ -22,12 +22,14 @@
 // 定义error信息
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,TAG,__VA_ARGS__)
 
-static FlashManager *m_FiscalMem = nullptr;
+static FlashManager * m_FiscalMem = nullptr;
 
-bool CheckInit(JNIEnv *env) {
+bool CheckInit(JNIEnv * env)
+{
     jclass newExcCls;
 
-    if ((m_FiscalMem != nullptr) && m_FiscalMem->IsInited()) {
+    if((m_FiscalMem != nullptr) && m_FiscalMem->IsInited())
+    {
         return true;
     }
 
@@ -43,17 +45,20 @@ bool CheckInit(JNIEnv *env) {
  * Method:    OpenDevice
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_OpenDevice
-        (JNIEnv *env, jobject self) {
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_OpenDevice
+  (JNIEnv * env, jobject self)
+{
     LOGD("%s", __FUNCTION__);
     FM_CONTEXT_t fm_ctx;
     fm_ctx.env = env;
     m_FiscalMem = new FlashManager();
-    if (m_FiscalMem == nullptr) {
+    if(m_FiscalMem == nullptr)
+    {
         LOGE("%s new FiscalMem Error", __FUNCTION__);
         return FlashManager::CMD_HARDWARE_FAULT;
     }
-    if (m_FiscalMem->Init(&fm_ctx) < 0) {
+    if(m_FiscalMem->Init(&fm_ctx) < 0)
+    {
         LOGE("%s FiscalMem Init Error", __FUNCTION__);
         return FlashManager::CMD_HARDWARE_FAULT;
     }
@@ -66,8 +71,9 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_OpenDevice
  * Method:    CloseDevie
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_com_FisNano_FiscalMemory_CloseDevie
-        (JNIEnv *env, jobject self) {
+extern "C" JNIEXPORT jboolean JNICALL Java_com_FisNano_FiscalMemory_CloseDevie
+  (JNIEnv * env, jobject self)
+{
     delete m_FiscalMem;
     m_FiscalMem = nullptr;
     LOGD("%s", __FUNCTION__);
@@ -79,15 +85,17 @@ JNIEXPORT jboolean JNICALL Java_com_FisNano_FiscalMemory_CloseDevie
  * Method:    GetFiscalCode
  * Signature: ()[B
  */
-JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetFiscalCode
-        (JNIEnv *env, jobject self) {
+extern "C" JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetFiscalCode
+  (JNIEnv * env, jobject self)
+{
     jbyte m_FiscalCode[40];
     uint8_t len = FlashManager::FISCAL_CODE_MAX_SIZE;
 
-    if (!CheckInit(env)) { return nullptr; }
+    if(!CheckInit(env)) { return nullptr; }
 
-    int32_t ret = m_FiscalMem->GetFiscalCode((uint8_t *) m_FiscalCode, len);
-    if (ret != FlashManager::CMD_OK) {
+    int32_t ret = m_FiscalMem->GetFiscalCode((uint8_t *)m_FiscalCode, len);
+    if(ret != FlashManager::CMD_OK)
+    {
         LOGE("GetFiscal Code Error");
         return nullptr;
     }
@@ -106,16 +114,17 @@ JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetFiscalCode
  * Method:    SetFiscalCode
  * Signature: ([B)I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalCode
-        (JNIEnv *env, jobject self, jbyteArray FiscalCode) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalCode
+  (JNIEnv * env, jobject self, jbyteArray FiscalCode)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     jint len = env->GetArrayLength(FiscalCode);
-    jbyte *data = env->GetByteArrayElements(FiscalCode, NULL);
+    jbyte* data = env->GetByteArrayElements(FiscalCode, NULL);
 
     LOGD("%s  %d len %d\n", __FUNCTION__, __LINE__, len);
     if (data != nullptr) {
-        LOGE("%s data = %*.*s len %d\n", __FUNCTION__, len, len, data, len);
-        m_FiscalMem->SetFiscalCode((const uint8_t *) data, len);
+        LOGE("%s data = %*.*s len %d\n", __FUNCTION__,  len, len, (char *)data, len);
+        m_FiscalMem->SetFiscalCode((const uint8_t *)data, len);
         env->ReleaseByteArrayElements(FiscalCode, data, JNI_ABORT);
         return FlashManager::CMD_OK;
     }
@@ -127,14 +136,16 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalCode
  * Method:    GetFiscalNum
  * Signature: ()[B
  */
-JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetFiscalNumber(JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return nullptr; }
+extern "C" JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetFiscalNumber(JNIEnv * env, jobject self)
+{
+    if(!CheckInit(env)) { return nullptr; }
 
     jbyte m_Fiscal[100];
     uint8_t len = FlashManager::FISCAL_NUMBER_MAX_SIZE;
 
-    int32_t ret = m_FiscalMem->GetFiscalNumber((uint8_t *) m_Fiscal, len);
-    if (ret != FlashManager::CMD_OK) {
+    int32_t ret = m_FiscalMem->GetFiscalNumber((uint8_t *)m_Fiscal, len);
+    if(ret != FlashManager::CMD_OK)
+    {
         LOGE("GetFiscal Code Error");
         return nullptr;
     }
@@ -153,16 +164,16 @@ JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetFiscalNumber(JNIEn
  * Method:    SetFiscalNum
  * Signature: ([B)I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalNumber
-        (JNIEnv *env, jobject self, jbyteArray FiscalNum) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
-    jint len = env->GetArrayLength(FiscalNum);
-    jbyte *data = env->GetByteArrayElements(FiscalNum, NULL);
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalNumber(JNIEnv *env, jobject thiz, jbyteArray fiscal_num)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+    jint len = env->GetArrayLength(fiscal_num);
+    jbyte* data = env->GetByteArrayElements(fiscal_num, NULL);
     LOGD("%s  %d len %d\n", __FUNCTION__, __LINE__, len);
     if (data != NULL) {
-        LOGE("%s data = %*.*s len %d\n", __FUNCTION__, len, len, data, len);
-        m_FiscalMem->SetFiscalNumber((const uint8_t *) data, len);
-        env->ReleaseByteArrayElements(FiscalNum, data, JNI_ABORT);
+        LOGE("%s data = %*.*s len %d\n", __FUNCTION__,  len, len, (char *)data, len);
+        m_FiscalMem->SetFiscalNumber((const uint8_t *)data, len);
+        env->ReleaseByteArrayElements(fiscal_num, data, JNI_ABORT);
         return FlashManager::CMD_OK;
     }
 
@@ -170,16 +181,23 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalNumber
 }
 /*
  * Class:     com_FisNano_FiscalMemory
- * Method:    SendDataOfEntry
+ * Method:    SetEntryData
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SendDataOfEntry
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jint JNICALL
+Java_com_FisNano_FiscalMemory_SetEntryData(JNIEnv *env, jobject thiz, jbyteArray entry_data) {
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+    jint len = env->GetArrayLength(entry_data);
+    jbyte* data = env->GetByteArrayElements(entry_data, NULL);
+    LOGD("%s  %d len %d\n", __FUNCTION__, __LINE__, len);
+    if (data != NULL) {
+        LOGE("%s data = %*.*s len %d\n", __FUNCTION__,  len, len, (char *)data, len);
+        m_FiscalMem->SetEntry((const uint8_t *)data, len);
+        env->ReleaseByteArrayElements(entry_data, data, JNI_ABORT);
+        return FlashManager::CMD_OK;
+    }
 
-//    m_FiscalMem->Se
-
-    return FlashManager::CMD_OK;
+    return FlashManager::CMD_ARGUMENT_INVALID;
 }
 
 /*
@@ -187,9 +205,10 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SendDataOfEntry
  * Method:    GetNumberOfEntries
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetNumberOfEntries
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetNumberOfEntries
+  (JNIEnv * env, jobject self)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     return m_FiscalMem->GetNumberOfEntries();
 }
 
@@ -198,10 +217,11 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetNumberOfEntries
  * Method:    SetEntryIndex
  * Signature: (I)I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetEntryIndex
-        (JNIEnv *env, jobject self, jint Index) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
-    jint ret = m_FiscalMem->SetEntryNumber(Index);
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetEntryIndex
+  (JNIEnv * env, jobject self, jint Index)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+    jint ret = m_FiscalMem->SetEntryNumber((uint32_t)Index);
     return ret;
 }
 
@@ -210,15 +230,18 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetEntryIndex
  * Method:    GetEntryData
  * Signature: ()[B
  */
-JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetEntryData
-        (JNIEnv *env, jobject self) {
+extern "C" JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetEntryData
+  (JNIEnv * env, jobject self, jint index)
+{
+
     uint8_t rd_buf[FlashManager::ENTRY_SIZE + 4];
     uint8_t get_len = FlashManager::ENTRY_SIZE;
 
-    if (!CheckInit(env)) { return nullptr; }
+    if(!CheckInit(env)) { return nullptr; }
     //
     jint ret = m_FiscalMem->GetEntry(rd_buf, get_len);
-    if (ret == FlashManager::CMD_OK && get_len == FlashManager::ENTRY_SIZE) {
+    if(ret == FlashManager::CMD_OK && get_len == FlashManager::ENTRY_SIZE)
+    {
         jbyteArray mByteArray = env->NewByteArray(FlashManager::ENTRY_SIZE);
         env->SetByteArrayRegion(mByteArray, 0, FlashManager::ENTRY_SIZE,
                                 reinterpret_cast<const jbyte *>(rd_buf));
@@ -228,28 +251,15 @@ JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetEntryData
     return nullptr;
 }
 
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetEntryData
-        (JNIEnv *env, jobject self, jbyteArray entryData) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
-
-    jint len = env->GetArrayLength(entryData);
-    jbyte *data = env->GetByteArrayElements(entryData, NULL);
-
-    jint ret = m_FiscalMem->SetEntry((const uint8_t *) data, len);
-
-    env->ReleaseByteArrayElements(entryData, data, JNI_ABORT);
-
-    return ret;
-}
-
 /*
  * Class:     com_FisNano_FiscalMemory
  * Method:    GetFreeEntries
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetFreeEntries
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetFreeEntries
+  (JNIEnv * env, jobject self)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     return m_FiscalMem->GetEntrySpace();
 }
 
@@ -258,9 +268,10 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetFreeEntries
  * Method:    ClearCompleteCard
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_ClearCompleteCard
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_ClearCompleteCard
+  (JNIEnv * env, jobject self)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     m_FiscalMem->ClearCompleteCard();
     return FlashManager::CMD_OK;
 }
@@ -270,9 +281,10 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_ClearCompleteCard
  * Method:    SoftwareReset
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SoftwareReset
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SoftwareReset
+  (JNIEnv * env, jobject self)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     return FlashManager::CMD_OK;
 }
 
@@ -281,11 +293,22 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SoftwareReset
  * Method:    SetFiscalRevolingAmount
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalRevolingAmount
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
-//    m_FiscalMem->SetFiscalRevolvingAmount();
-    return FlashManager::CMD_OK;
+extern "C" JNIEXPORT jint JNICALL
+Java_com_FisNano_FiscalMemory_SetFiscalRevolingAmount(JNIEnv *env, jobject thiz,
+                                                      jbyteArray revoling_amount)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+    jint len = env->GetArrayLength(revoling_amount);
+    jbyte* data = env->GetByteArrayElements(revoling_amount, NULL);
+    LOGD("%s  %d len %d\n", __FUNCTION__, __LINE__, len);
+    if (data != NULL) {
+        LOGE("%s data = %*.*s len %d\n", __FUNCTION__,  len, len, (char *)data, len);
+        m_FiscalMem->SetFiscalRevolvingAmount((const uint8_t *)data, len);
+        env->ReleaseByteArrayElements(revoling_amount, data, JNI_ABORT);
+        return FlashManager::CMD_OK;
+    }
+
+    return FlashManager::CMD_ARGUMENT_INVALID;
 }
 
 /*
@@ -293,11 +316,25 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalRevolingAmount
  * Method:    GetFiscalRevolingAmount
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetFiscalRevolingAmount
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
-//    m_FiscalMem->GetFiscalRevolvingAmount();
-    return FlashManager::CMD_OK;
+extern "C"
+JNIEXPORT jbyteArray JNICALL
+Java_com_FisNano_FiscalMemory_GetFiscalRevolingAmount(JNIEnv *env, jobject thiz)
+{
+    uint8_t rd_buf[FlashManager::ENTRY_SIZE + 4];
+    uint8_t get_len = FlashManager::ENTRY_SIZE;
+
+    if(!CheckInit(env)) { return nullptr; }
+    //
+    jint ret = m_FiscalMem->GetFiscalRevolvingAmount(rd_buf, get_len);
+    if(ret == FlashManager::CMD_OK && get_len == FlashManager::ENTRY_SIZE)
+    {
+        jbyteArray mByteArray = env->NewByteArray(FlashManager::ENTRY_SIZE);
+        env->SetByteArrayRegion(mByteArray, 0, FlashManager::ENTRY_SIZE,
+                                reinterpret_cast<const jbyte *>(rd_buf));
+        return mByteArray;
+    }
+
+    return nullptr;
 }
 
 /*
@@ -305,11 +342,11 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_GetFiscalRevolingAmount
  * Method:    SetMode
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL
-Java_com_FisNano_FiscalMemory_SetMode(JNIEnv *env, jobject thiz, jboolean enable_user_mode) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetMode(JNIEnv *env, jobject thiz, jboolean enable_user_mode)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     jint mode = enable_user_mode ? 0 : 1;
-    return m_FiscalMem->SetMode(mode);
+    return m_FiscalMem->SetMode((uint8_t)mode);
 }
 
 
@@ -318,20 +355,18 @@ Java_com_FisNano_FiscalMemory_SetMode(JNIEnv *env, jobject thiz, jboolean enable
  * Method:    GetFirmwareInfo
  * Signature: ()[B
  */
-JNIEXPORT jstring JNICALL Java_com_FisNano_FiscalMemory_GetFirmwareInfo
-        (JNIEnv *env, jobject self) {
+extern "C" JNIEXPORT jstring JNICALL Java_com_FisNano_FiscalMemory_GetFirmwareInfo
+  (JNIEnv * env, jobject self)
+{
     char buf[200];
-    if (!CheckInit(env)) { return nullptr; }
-    str_fmInfo info = m_FiscalMem->GetFmInfo();
-    sprintf(buf,
-            "type(%s) size(%u) version(%u), single_read_size(0x%x) single_write_size(0x%x) erase_size(0x%x)\n",
-            info.fm_type, info.fm_size, info.fm_version, info.fm_single_read_size,
-            info.fm_single_write_size,
-            info.fm_erase_size);
-    LOGD("type(%s) size(%u) version(%u), single_read_size(0x%x) single_write_size(0x%x) erase_size(0x%x)\n",
-         info.fm_type, info.fm_size, info.fm_version, info.fm_single_read_size,
-         info.fm_single_write_size,
+    if(!CheckInit(env)) { return nullptr; }
+    str_fmInfo info =  m_FiscalMem->GetFmInfo();
+    sprintf(buf, "type(%s) size(%u) version(%u), single_read_size(0x%x) single_write_size(0x%x) erase_size(0x%x)\n",
+         info.fm_type, info.fm_size, info.fm_version, info.fm_single_read_size, info.fm_single_write_size,
          info.fm_erase_size);
+    LOGD("type(%s) size(%u) version(%u), single_read_size(0x%x) single_write_size(0x%x) erase_size(0x%x)\n",
+            info.fm_type, info.fm_size, info.fm_version, info.fm_single_read_size, info.fm_single_write_size,
+            info.fm_erase_size);
     return env->NewStringUTF(buf);
 }
 
@@ -340,9 +375,10 @@ JNIEXPORT jstring JNICALL Java_com_FisNano_FiscalMemory_GetFirmwareInfo
  * Method:    GetDailySalesTotalSum
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTotalSum
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTotalSum
+  (JNIEnv * env, jobject self)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     return m_FiscalMem->GetDailySalesTotal();
 }
 
@@ -351,9 +387,10 @@ JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTotalSum
  * Method:    GetDailySalesTaxSum
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTaxSum
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTaxSum
+  (JNIEnv * env, jobject self)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     return m_FiscalMem->GetDailySalesTaxTotal();
 }
 
@@ -362,10 +399,11 @@ JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTaxSum
  * Method:    SetDailySalesTotalSumRangeByIndex
  * Signature: (IJ)Z
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetDailySalesTotalSumRangeByIndex
-        (JNIEnv *env, jobject self, jint Index, jint Range) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
-    return m_FiscalMem->SetDailySalesTotalStartStop_Index(Index, Range);
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetDailySalesTotalSumRangeByIndex
+  (JNIEnv * env, jobject self, jint Index, jint Range)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+    return m_FiscalMem->SetDailySalesTotalStartStop_Index((uint32_t)Index, (uint32_t)Range);
 }
 
 
@@ -375,9 +413,10 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetDailySalesTotalSumRangeB
  * Method:    SetDailySalesTotalSumRangeByDateTime
  * Signature: (Ljava/util/Date;J)Z
  */
-JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetDailySalesTotalSumRangeByDateTime
-        (JNIEnv *env, jobject self, jlong start_date, jlong end_date) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetDailySalesTotalSumRangeByDateTime
+  (JNIEnv * env, jobject self, jlong start_date, jlong end_date)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     return m_FiscalMem->SetDailySalesTotalStartStop_DateTime(start_date, end_date);
 }
 
@@ -386,9 +425,10 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetDailySalesTotalSumRangeB
  * Method:    DailySalesTotalSumRange
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTotalSumRange
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTotalSumRange
+  (JNIEnv * env, jobject self)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     return m_FiscalMem->GetDailySalesTotal_Range();
 }
 
@@ -397,46 +437,19 @@ JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTotalSumRange
  * Method:    DailySalesTaxSumRange
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTaxSumRange
-        (JNIEnv *env, jobject self) {
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
+extern "C" JNIEXPORT jlong JNICALL Java_com_FisNano_FiscalMemory_GetDailySalesTaxSumRange
+  (JNIEnv * env, jobject self)
+{
+    if(!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
     return m_FiscalMem->GetDailySalesTaxTotal_Range();
 }
 
-/*
- * Class:     com_FisNano_FiscalMemory
- * Method:    GetFiscalNumberStatus
- * Signature: ()J
- */
-//JNIEXPORT jboolean JNICALL
-//Java_com_FisNano_FiscalMemory_GetFiscalNumberStatus(JNIEnv *env, jobject thiz)
-//{
-//    if(!CheckInit(env)) { return JNI_FALSE; }
-//    if(m_FiscalMem->GetFiscalNumberStatus())
-//    {
-//        return JNI_TRUE;
-//    }
-//
-//    return JNI_FALSE;
-//}
-//
-//JNIEXPORT jboolean JNICALL
-//Java_com_FisNano_FiscalMemory_GetFiscalCodeStatus(JNIEnv *env, jobject thiz) {
-//    // TODO: implement GetFiscalCodeStatus()
-//}
-//
-//JNIEXPORT jboolean JNICALL
-//Java_com_FisNano_FiscalMemory_GetFiscalRevolvingAmountStatus(JNIEnv *env, jobject thiz) {
-//    // TODO: implement GetFiscalRevolvingAmountStatus()
-//}
-JNIEXPORT jboolean JNICALL
+
+
+extern "C" JNIEXPORT jboolean JNICALL
 Java_com_FisNano_FiscalMemory_GetFullStatus(JNIEnv *env, jobject thiz) {
     // TODO: implement GetFullStatus()
-    if (!CheckInit(env)) { return FlashManager::CMD_HARDWARE_FAULT; }
-    return m_FiscalMem->GetFullStatus();
+    if(!CheckInit(env)) { return JNI_FALSE; }
+    return (jboolean)m_FiscalMem->GetFullStatus();
 }
-//JNIEXPORT void JNICALL
-//Java_com_FisNano_FiscalMemory_SetFullStatus(JNIEnv *env, jobject thiz) {
-//    // TODO: implement SetFullStatus()
-////    return m_FiscalMem->Set
-//}
+
