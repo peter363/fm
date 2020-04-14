@@ -452,20 +452,20 @@ public class MainActivity extends Activity {
                 mEtStart2EndIndex.setText("");
                 showDatePickerDialog(this, mTvDailySalesDateStart, Calendar.getInstance());
 
-                break;
+                return;
 
             case R.id.tv_dailysales_time_start:
                 mEtStart2EndIndex.setText("");
                 mEtStart2EndIndex.setText("");
                 showTimePickerDialog(this, mTvDailySalesTimeStart, Calendar.getInstance());
 
-                break;
+                return;
 
             case R.id.tv_dailysales_date_end:
                 mEtStart2EndIndex.setText("");
                 showDatePickerDialog(this, mTvDailySalesDateEnd, Calendar.getInstance());
 
-                break;
+                return;
 
             case R.id.tv_dailysales_time_end:
                 mEtStart2EndIndex.setText("");
