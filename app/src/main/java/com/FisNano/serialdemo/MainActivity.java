@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import com.FisNano.FiscalMemory;
@@ -41,6 +42,7 @@ public class MainActivity extends Activity {
     TextView m_ConsoleText;
     ScrollView m_ScrollView;
     FiscalMemory m_FiscalFmemory;
+    String oriContent = null;
 
     Handler mHandler = new Handler() {
         @Override
@@ -53,8 +55,19 @@ public class MainActivity extends Activity {
                 String str = (String) msg.obj;
                 m_ConsoleText.setText(m_ConsoleText.getText() + str + "\n");
                 m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
-            }
+            } else if (1 == msg.what) {
 
+                if (TextUtils.isEmpty(oriContent)) {
+                    oriContent = m_ConsoleText.getText().toString();
+                }
+
+                m_ConsoleText.setText(oriContent + getString(R.string.write_zreport_test, COUNT));
+
+            } else if (2 == msg.what) {
+                oriContent = m_ConsoleText.getText().toString();
+
+                m_ConsoleText.setText(oriContent + "Complete " + getString(R.string.write_zreport_test, loopCount) + "\n");
+            }
         }
     };
     private EditText mEtFiscalcode;
@@ -69,6 +82,9 @@ public class MainActivity extends Activity {
     private TextView mTvDailySalesTimeEnd;
     private EditText mEtStart2EndIndex;
     private AlertDialog openingDialog;
+
+    private int loopCount = 0;
+    private static final int COUNT = 2500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -193,7 +209,7 @@ public class MainActivity extends Activity {
                 true).show();
     }
 
-    int testStr = 0;
+    boolean EnableUserMode = false;
 
     public void onClick(View v) {
         int ret;
@@ -237,7 +253,18 @@ public class MainActivity extends Activity {
                 break;
 
             case R.id.btn_setmode:
-//                m_FiscalFmemory.SetMode(false);
+
+                if (EnableUserMode) {
+                    EnableUserMode = false;
+                } else {
+                    EnableUserMode = true;
+                }
+
+                ret = m_FiscalFmemory.SetMode(EnableUserMode);
+
+                OutStr += (ret == FiscalMemory.CMD_OK) ? "SetMode:" + EnableUserMode + ":Success" : "SetMode:" + EnableUserMode + ":Fail";
+
+                OutStr += "\n";
                 break;
 
             case R.id.btn_write_fiscal_code:
@@ -304,37 +331,10 @@ public class MainActivity extends Activity {
 
             case R.id.btn_write_z_report:
 
-                String totalTax = mEtTotalTax.getText().toString();
-                String date = mTvDate.getText().toString();
-                String time = mTvTime.getText().toString();
-
-                if (TextUtils.isEmpty(totalTax) || TextUtils.isEmpty(date) || TextUtils.isEmpty(time)) {
+                ZReportEntry zReportEntry = createZReportEntry();
+                if (zReportEntry == null) {
                     return;
                 }
-
-                String[] split = totalTax.split(",");
-                int total = Integer.parseInt(split[0]);
-                int tax = Integer.parseInt(split[1]);
-                short serialNum = Short.parseShort(split[2]);
-
-                String[] split1 = date.split(",");
-                int year = Integer.parseInt(split1[0]);
-                int month = Integer.parseInt(split1[1]);
-                short day = Short.parseShort(split1[2]);
-
-                String[] split2 = time.split(",");
-                int hour = Integer.parseInt(split2[0]);
-                int minute = Integer.parseInt(split2[1]);
-
-                ZReportEntry zReportEntry = new ZReportEntry();
-                zReportEntry.setSales_total(total);
-                zReportEntry.setSales_tax(tax);
-                zReportEntry.setYear(year);
-                zReportEntry.setMonth(month);
-                zReportEntry.setDay(day);
-                zReportEntry.setHour(hour);
-                zReportEntry.setMinute(minute);
-                zReportEntry.setSerial_number(serialNum);
 
                 byte[] zReportData = zReportEntry.getZReportData();
 
@@ -473,12 +473,88 @@ public class MainActivity extends Activity {
 
                 break;
 
+            case R.id.btn_write_loop_z_report:
+
+                loopWriteZReportEntry();
+
+                break;
+
             default:
                 return;
         }
 
         m_ConsoleText.setText(m_ConsoleText.getText() + OutStr + "\r\n");
         m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+    }
+
+    private void loopWriteZReportEntry() {
+        final ZReportEntry zReportEntry = createZReportEntry();
+        if (zReportEntry == null) {
+            return;
+        }
+
+        loopCount = 0;
+
+        new Thread() {
+            @Override
+            public void run() {
+
+                while (loopCount < COUNT && loopCount != -1) {
+                    byte[] zReportData = zReportEntry.getZReportData();
+
+                    int ret = m_FiscalFmemory.SetEntryData(zReportData);
+                    if (ret == FiscalMemory.CMD_OK) {
+                        if (loopCount == 0) {
+                            mHandler.sendEmptyMessage(1);
+                        }
+                    } else {
+                        mHandler.sendEmptyMessage(2);
+                        return;
+                    }
+                    loopCount++;
+                    if (loopCount == COUNT) {
+                        mHandler.sendEmptyMessage(2);
+                    }
+                }
+
+            }
+        }.start();
+    }
+
+    private ZReportEntry createZReportEntry() {
+        String totalTax = mEtTotalTax.getText().toString();
+        String date = mTvDate.getText().toString();
+        String time = mTvTime.getText().toString();
+
+        if (TextUtils.isEmpty(totalTax) || TextUtils.isEmpty(date) || TextUtils.isEmpty(time)) {
+            return null;
+        }
+
+        String[] split = totalTax.split(",");
+        int total = Integer.parseInt(split[0]);
+        int tax = Integer.parseInt(split[1]);
+        short serialNum = Short.parseShort(split[2]);
+
+        String[] split1 = date.split(",");
+        int year = Integer.parseInt(split1[0]);
+        int month = Integer.parseInt(split1[1]);
+        short day = Short.parseShort(split1[2]);
+
+        String[] split2 = time.split(",");
+        int hour = Integer.parseInt(split2[0]);
+        int minute = Integer.parseInt(split2[1]);
+
+        ZReportEntry zReportEntry = new ZReportEntry();
+        zReportEntry.setSales_total(total);
+        zReportEntry.setSales_tax(tax);
+        zReportEntry.setYear(year);
+        zReportEntry.setMonth(month);
+        zReportEntry.setDay(day);
+        zReportEntry.setHour(hour);
+        zReportEntry.setMinute(minute);
+        zReportEntry.setSerial_number(serialNum);
+
+        return zReportEntry;
     }
 
     private void SetDailySalesTotalSumRange() {

@@ -388,6 +388,18 @@
                     android:text="GetDailySalesTaxSumRange" />
             </LinearLayout>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@android:color/holo_red_dark" />
+
+            <Button
+                android:id="@+id/btn_write_loop_z_report"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClick"
+                android:text="Write 2000s Z Report Test" />
+
 
         </LinearLayout>
     </ScrollView>
