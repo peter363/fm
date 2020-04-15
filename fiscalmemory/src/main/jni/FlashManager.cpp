@@ -1,5 +1,5 @@
 /*************************************************************
- 
+
    Copyright (c) 2008 telos EDV Systementwicklung GmbH,
    Hamburg (Germany)
 
@@ -33,16 +33,16 @@
 /************************************************************************/
 FlashManager::FlashManager() : m_config()
 {
-  LOGE("%s", __FUNCTION__);
+  LOGD("%s", __FUNCTION__);
   m_entry_number = 0;
   m_get_daily_sales_total_start_idx = -1;
   m_get_daily_sales_total_stop_idx = -1;
-  m_hardware_fault = false;  
+  m_hardware_fault = false;
 }
 
 FlashManager::~FlashManager()
 {
-  LOGE("%s", __FUNCTION__);
+  LOGD("%s", __FUNCTION__);
 }
 
 int32_t FlashManager::Init(FM_CONTEXT_t const *fm_ctx)
@@ -68,7 +68,11 @@ bool FlashManager::IsInited()
 int FlashManager::SetFiscalCode(const uint8_t* pBuffer, int number_of_bytes)
 {
   // assertions
-  assert(pBuffer != 0);
+  if(pBuffer == nullptr)
+  {
+    LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
+    return CMD_ARGUMENT_INVALID;
+  }
 //  assert(number_of_bytes == FISCAL_CODE_MAX_SIZE);
 
   // check parameters
@@ -89,6 +93,7 @@ int FlashManager::SetFiscalCode(const uint8_t* pBuffer, int number_of_bytes)
   // set fiscal code
   if(m_config.SetFiscalCode(pBuffer, number_of_bytes) != FM_SUCCESS)
   {
+	  LOGE("%s %d CMD_HARDWARE_FAULT", __FUNCTION__, __LINE__);
       return CMD_HARDWARE_FAULT;
   }
   return CMD_OK;
@@ -107,7 +112,11 @@ int FlashManager::SetFiscalCode(const uint8_t* pBuffer, int number_of_bytes)
 int FlashManager::GetFiscalCode(uint8_t* pBuffer, uint8_t &number_of_bytes)
 {
   // assertions
-  assert(pBuffer != 0);
+  if(pBuffer == nullptr)
+  {
+    LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
+    return CMD_ARGUMENT_INVALID;
+  }
 //  assert(number_of_bytes == FISCAL_CODE_MAX_SIZE);
 
   // check parameters
@@ -129,7 +138,8 @@ int FlashManager::GetFiscalCode(uint8_t* pBuffer, uint8_t &number_of_bytes)
   // get fiscal code
   if(m_config.GetFiscalCode(pBuffer, number_of_bytes) <= 0)
   {
-      return CMD_HARDWARE_FAULT;
+     LOGE("%s %d CMD_HARDWARE_FAULT", __FUNCTION__, __LINE__);
+     return CMD_HARDWARE_FAULT;
   }
   return CMD_OK;
 }
@@ -147,21 +157,37 @@ int FlashManager::GetFiscalCode(uint8_t* pBuffer, uint8_t &number_of_bytes)
 int FlashManager::SetFiscalNumber(const uint8_t* pBuffer, int number_of_bytes)
 {
   // assertions
-  assert(pBuffer != 0);
-  assert(number_of_bytes == FISCAL_NUMBER_MAX_SIZE);
+  if(pBuffer == nullptr)
+  {
+    LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
+    return CMD_ARGUMENT_INVALID;
+  }
+
+  // check parameters
+  if(number_of_bytes != FISCAL_NUMBER_MAX_SIZE) {
+    LOGE("%s %d CMD_DATA_INCOMPLETE", __FUNCTION__, __LINE__);
+    return CMD_DATA_INCOMPLETE;
+  }
 
   // check paramezers
   if((number_of_bytes < FISCAL_NUMBER_MIN_SIZE) ||
      (number_of_bytes > FISCAL_NUMBER_MAX_SIZE))
-    return CMD_DATA_INCOMPLETE;
-  
+  {
+	  LOGE("%s %d CMD_DATA_INCOMPLETE", __FUNCTION__, __LINE__);
+      return CMD_DATA_INCOMPLETE;
+  }
+
   // already set?
   if (m_config.GetFiscalNumberStatus() == true)
-    return CMD_FISCAL_NUMBER_AND_CODE_HAS_BEEN_ALREADY_SET;
-  
+  {
+	  LOGE("%s %d CMD_FISCAL_NUMBER_AND_CODE_HAS_BEEN_ALREADY_SET", __FUNCTION__, __LINE__);
+      return CMD_FISCAL_NUMBER_AND_CODE_HAS_BEEN_ALREADY_SET;
+  }
+
   // set fiscal number
   if(m_config.SetFiscalNumber(pBuffer, number_of_bytes) != FM_SUCCESS)
   {
+	  LOGE("%s %d CMD_HARDWARE_FAULT", __FUNCTION__, __LINE__);
       return CMD_HARDWARE_FAULT;
   }
 
@@ -181,23 +207,29 @@ int FlashManager::SetFiscalNumber(const uint8_t* pBuffer, int number_of_bytes)
 int FlashManager::GetFiscalNumber(uint8_t* pBuffer, uint8_t &number_of_bytes)
 {
   // assertions
-  if(pBuffer == 0)
+  if(pBuffer == nullptr)
   {
+    LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
     return CMD_ARGUMENT_INVALID;
   }
 
   // check parameters
   if(number_of_bytes != FISCAL_NUMBER_MAX_SIZE) {
+    LOGE("%s %d CMD_DATA_INCOMPLETE", __FUNCTION__, __LINE__);
     return CMD_DATA_INCOMPLETE;
   }
 
   // fiscal number set?
   if (m_config.GetFiscalNumberStatus() == false)
-    return CMD_FISCAL_NUMBER_AND_CODE_NOT_SET;
-  
+  {
+	  LOGE("%s %d CMD_FISCAL_NUMBER_AND_CODE_NOT_SET", __FUNCTION__, __LINE__);
+      return CMD_FISCAL_NUMBER_AND_CODE_NOT_SET;
+  }
+
   // get fiscal number
   if(m_config.GetFiscalNumber(pBuffer, number_of_bytes) <= 0)
   {
+	  LOGE("%s %d CMD_HARDWARE_FAULT", __FUNCTION__, __LINE__);
       return CMD_HARDWARE_FAULT;
   }
 
@@ -216,23 +248,34 @@ int FlashManager::GetFiscalNumber(uint8_t* pBuffer, uint8_t &number_of_bytes)
 int FlashManager::SetEntry(const uint8_t* pBuffer, int number_of_bytes)
 {
   // assertions
-  assert(pBuffer != 0);
-  assert(number_of_bytes == ENTRY_SIZE);
+  if(pBuffer == nullptr)
+  {
+    LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
+  	return CMD_ARGUMENT_INVALID;
+  }
 
   // check parameters
   if(number_of_bytes != ENTRY_SIZE)
+  {
+    LOGE("%s %d CMD_DATA_INCOMPLETE", __FUNCTION__, __LINE__);
     return CMD_DATA_INCOMPLETE;
+  }
 
   // module full?
-  if(m_config.GetFullStatus() == true) 
+  if(m_config.GetFullStatus() == true)
+  {
+    LOGE("%s %d CMD_NO_SPACE_LEFT", __FUNCTION__, __LINE__);
     return CMD_NO_SPACE_LEFT;
-  
+  }
+
   // store entry
   m_config.SetEntry(pBuffer, number_of_bytes);
 
   // mark module as full?
   if (m_config.GetEntrySpace() == 0)
+  {
     m_config.SetFullStatus();
+  }
 
   return CMD_OK;
 }
@@ -259,11 +302,17 @@ uint32_t FlashManager::GetNumberOfEntries()
 int FlashManager::GetFlashStatus()
 {
   if(m_hardware_fault == true)
+  {
+    LOGE("%s %d CMD_HARDWARE_FAULT", __FUNCTION__, __LINE__);
     return CMD_HARDWARE_FAULT;
-  
+  }
+
   if(m_config.GetFullStatus() == true)
+  {
+    LOGE("%s %d CMD_NO_SPACE_LEFT", __FUNCTION__, __LINE__);
     return CMD_NO_SPACE_LEFT;
-  
+  }
+
   return CMD_OK;
 }
 
@@ -278,8 +327,11 @@ int FlashManager::GetFlashStatus()
 int FlashManager::SetEntryNumber(uint32_t entry_number)
 {
   if(entry_number >= GetNumberOfEntries())
+  {
+    LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
     return CMD_ARGUMENT_INVALID;
- 
+  }
+
   m_entry_number = entry_number;
 
   return CMD_OK;
@@ -296,16 +348,28 @@ int FlashManager::SetEntryNumber(uint32_t entry_number)
 int FlashManager::GetEntry(uint8_t* pBuffer, uint8_t &number_of_bytes)
 {
   // assertions
-  assert(pBuffer != 0);
-  assert(number_of_bytes == ENTRY_SIZE);
-
+  if(pBuffer == nullptr)
+  {
+    LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
+    return CMD_ARGUMENT_INVALID;
+  }
+  if(number_of_bytes != ENTRY_SIZE) {
+    LOGE("%s %d CMD_DATA_INCOMPLETE", __FUNCTION__, __LINE__);
+    return CMD_DATA_INCOMPLETE;
+  }
   // check parameters
   if(number_of_bytes != ENTRY_SIZE)
+  {
+    LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
     return CMD_ARGUMENT_INVALID;
+  }
 
   // check index
   if(m_entry_number >= GetNumberOfEntries())
+  {
+    LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
     return CMD_ARGUMENT_INVALID;
+  }
 
   // get entry
   m_config.GetEntry(m_entry_number, pBuffer, number_of_bytes);
@@ -392,7 +456,7 @@ int FlashManager::SetDailySalesTotalStartStop_Index (uint32_t start_idx, uint32_
 int FlashManager::SetDailySalesTotalStartStop_DateTime (uint32_t start_date_time, uint32_t stop_date_time)
 {
   uint32_t  entries;
-  
+
 
   // check parameters
   if (start_date_time > stop_date_time)
@@ -447,7 +511,7 @@ uint64_t FlashManager::GetDailySalesTotal_Range()
 
 
   result = 0;
-  
+
   if ((m_get_daily_sales_total_start_idx == -1) ||
       (m_get_daily_sales_total_stop_idx == -1))
     return result;
@@ -470,7 +534,7 @@ uint64_t FlashManager::GetDailySalesTotal_Range()
 uint64_t FlashManager::GetDailySalesTaxTotal_Range()
 {
   uint64_t  result;
-  
+
 
   result = 0;
 
@@ -529,7 +593,7 @@ int FlashManager::SetFiscalRevolvingAmount(const uint8_t* pBuffer, int number_of
 int FlashManager::GetFiscalRevolvingAmount(uint8_t* pBuffer, uint8_t &number_of_bytes)
 {
   // assertions
-  if(pBuffer == 0)
+  if(pBuffer == nullptr)
       return CMD_ARGUMENT_INVALID;
 
   // check parameters
@@ -539,7 +603,7 @@ int FlashManager::GetFiscalRevolvingAmount(uint8_t* pBuffer, uint8_t &number_of_
   // revolving amount set?
   if (m_config.GetFiscalRevolvingAmountStatus() == false)
     return CMD_FISCAL_REVOLVING_AMOUNT_NOT_SET;
-  
+
   // get revolving amount
   m_config.GetFiscalRevolvingAmount(pBuffer, number_of_bytes);
 

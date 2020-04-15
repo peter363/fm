@@ -1,5 +1,5 @@
 /*************************************************************
- 
+
    Copyright (c) 2008 telos EDV Systementwicklung GmbH,
    Hamburg (Germany)
 
@@ -59,6 +59,15 @@ bool Configuration::IsInited() {
     return m_otp.IsInited();
 }
 
+
+
+#define GET_MEMBER_SYNC(m_data, member) ({\
+	m_otp.OtpMonitor_SyncMapByArea(GET_UINT32_ADDRESS((&(FM_DATA_BASE_ADDRESS->member))), sizeof(m_data->member)); \
+	m_data->member; \
+})
+
+
+
 int32_t Configuration::Init(FM_CONTEXT_t const *fm_ctx) {
     LOGD("Sizeof DATA = %d", (int)sizeof(Configuration::Data));
 
@@ -81,7 +90,7 @@ int32_t Configuration::Init(FM_CONTEXT_t const *fm_ctx) {
     m_user_mode = false;
     // If this is the first instance of this class, which has been created after
     // the manufacturing of the module, set the configuration values to the defaults.
-    if (m_data->m_cleared != CLEARED) {
+    if (GET_MEMBER_SYNC(m_data,m_cleared) != CLEARED) {
         LOGD("%s %d", __FUNCTION__, __LINE__);
         ClearFlash();
     }
@@ -200,7 +209,7 @@ Configuration::ReadString(const uint8_t *addr, uint8_t *data, uint8_t &data_len,
 /***********************************************************************/
 /*!
  *   Sets the status variable in the flash memory to STATUS_SET.
- * 
+ *
  *   \param addr  address of the status
  */
 /***********************************************************************/
@@ -218,7 +227,7 @@ int32_t Configuration::WriteStatus(const Status *addr) {
 /***********************************************************************/
 /*!
  *   Switch between user and factory mode
- * 
+ *
  *   \param enable user mode (true), factory mode (false)
  */
 /***********************************************************************/
@@ -275,7 +284,7 @@ bool Configuration::GetFiscalCodeStatus() {
         return false;
     }
 
-    if (m_data->m_status_fiscal_code == STATUS_NOT_SET) {
+    if (GET_MEMBER_SYNC(m_data, m_status_fiscal_code) == STATUS_NOT_SET) {
         return false;
     }
 
@@ -329,7 +338,7 @@ bool Configuration::GetFiscalNumberStatus() {
         return false;
     }
 
-    if (m_data->m_status_fiscal_number == STATUS_NOT_SET)
+    if (GET_MEMBER_SYNC(m_data, m_status_fiscal_number) == STATUS_NOT_SET)
         return false;
 
     return true;
@@ -401,9 +410,15 @@ void Configuration::GetFiscalRevolvingAmount(uint8_t *data, uint8_t &data_len) {
     cnt = min((int) data_len, Z_REPORT_ENTRY_SIZE);
 
     if (m_user_mode == false)
+    {
+    	GET_MEMBER_SYNC(m_data, m_factory_mode_data.m_revolving_amount);
         memcpy(data, m_data->m_factory_mode_data.m_revolving_amount, cnt);
+    }
     else
+    {
+    	GET_MEMBER_SYNC(m_data, m_user_mode_data.m_revolving_amount);
         memcpy(data, m_data->m_user_mode_data.m_revolving_amount, cnt);
+    }
 
     data_len = cnt;
 }
@@ -425,9 +440,15 @@ bool Configuration::GetFiscalRevolvingAmountStatus() {
     }
 
     if (m_user_mode == false)
+    {
+		GET_MEMBER_SYNC(m_data, m_status_factory_mode_revolving_amount);
         status = m_data->m_status_factory_mode_revolving_amount;
+    }
     else
+    {
+		GET_MEMBER_SYNC(m_data, m_status_user_mode_revolving_amount);
         status = m_data->m_status_user_mode_revolving_amount;
+    }
 
     if (status == STATUS_NOT_SET)
         return false;
@@ -452,6 +473,7 @@ void Configuration::CalculateNumberOfEntries() {
     m_number_of_entries_user_mode = 0;
 
     // search first unused entry (factory mode)
+    GET_MEMBER_SYNC(m_data, m_factory_mode_data);
     for (int i = 0; i < NUMBER_OF_Z_REPORTS_FACTORY_MODE; i++) {
         used = false;
 
@@ -475,10 +497,11 @@ void Configuration::CalculateNumberOfEntries() {
         m_number_of_entries_factory_mode = NUMBER_OF_Z_REPORTS_FACTORY_MODE;
 
     // search first unused entry (user mode)
+    GET_MEMBER_SYNC(m_data,m_user_mode_data);
     for (int i = 0; i < NUMBER_OF_Z_REPORTS_USER_MODE; i++) {
         used = false;
 
-        ZReportEntry const &entry = m_data->m_user_mode_data.m_z_reports[i];
+        ZReportEntry const &entry = m_data->m_factory_mode_data.m_z_reports[i];
 
         for (int a = 0; a < Z_REPORT_ENTRY_SIZE; a++) {
             if (entry[a] != 0xff) {
@@ -536,6 +559,8 @@ void Configuration::SetEntry(const uint8_t *data, int data_len) {
     // get index of next free item
     index = GetNumberOfEntries();
 
+	LOGE("%s user:%s idx:%d", __FUNCTION__, m_user_mode?"true":"false", index);
+
     // limit entry size
     cnt = min(data_len, Z_REPORT_ENTRY_SIZE);
 
@@ -550,21 +575,19 @@ void Configuration::SetEntry(const uint8_t *data, int data_len) {
     // write entry to flash and update value returned by GetNumberOfEntries()
     if (m_user_mode == false) {
         if (index < NUMBER_OF_Z_REPORTS_FACTORY_MODE) {
-            WriteFlash(GET_UINT32_ADDRESS(m_data->m_factory_mode_data.m_z_reports[index]),
+            WriteFlash(GET_UINT32_ADDRESS(FM_DATA_BASE_ADDRESS->m_factory_mode_data.m_z_reports[index]),
                        tmp,
                        Z_REPORT_ENTRY_SIZE);
             m_number_of_entries_factory_mode++;
         }
     } else {
         if (index < NUMBER_OF_Z_REPORTS_USER_MODE) {
-            WriteFlash(GET_UINT32_ADDRESS(m_data->m_user_mode_data.m_z_reports[index]),
+            WriteFlash(GET_UINT32_ADDRESS(FM_DATA_BASE_ADDRESS->m_user_mode_data.m_z_reports[index]),
                        tmp,
                        Z_REPORT_ENTRY_SIZE);
             m_number_of_entries_user_mode++;
         }
     }
-
-    LOGE("[zys-->] m_number_of_entries_factory_mode:%d", m_number_of_entries_factory_mode);
 }
 
 
@@ -585,12 +608,20 @@ void Configuration::GetEntry(int index, uint8_t *data, uint8_t &data_len) {
         return;
     }
 
+	LOGE("%s user:%s idx:%d", __FUNCTION__, m_user_mode?"true":"false", index);
+
     cnt = min((int) data_len, Z_REPORT_ENTRY_SIZE);
 
     if (m_user_mode == false)
+    {
+    	GET_MEMBER_SYNC(m_data, m_factory_mode_data.m_z_reports[index]);
         memcpy(data, m_data->m_factory_mode_data.m_z_reports[index], cnt);
+    }
     else
+    {
+    	GET_MEMBER_SYNC(m_data, m_user_mode_data.m_z_reports[index]);
         memcpy(data, m_data->m_user_mode_data.m_z_reports[index], cnt);
+    }
 
     data_len = cnt;
 }
@@ -613,9 +644,15 @@ uint32_t Configuration::GetDailySalesTotal(int index) {
     }
 
     if (m_user_mode == false)
+    {
+    	GET_MEMBER_SYNC(m_data, m_factory_mode_data.m_z_reports[index]);
         data = m_data->m_factory_mode_data.m_z_reports[index];
+    }
     else
+    {
+    	GET_MEMBER_SYNC(m_data, m_user_mode_data.m_z_reports[index]);
         data = m_data->m_user_mode_data.m_z_reports[index];
+    }
 
     result = data[0] |
              (data[1] << 8) |
@@ -643,9 +680,15 @@ uint32_t Configuration::GetDailySalesTaxTotal(int index) {
     }
 
     if (m_user_mode == false)
+    {
+    	GET_MEMBER_SYNC(m_data, m_factory_mode_data.m_z_reports[index]);
         data = m_data->m_factory_mode_data.m_z_reports[index];
+    }
     else
+    {
+    	GET_MEMBER_SYNC(m_data, m_user_mode_data.m_z_reports[index]);
         data = m_data->m_user_mode_data.m_z_reports[index];
+    }
 
     result = data[4] |
              (data[5] << 8) |
@@ -679,9 +722,15 @@ uint32_t Configuration::GetDateTime(int index) {
     }
     // get entry
     if (m_user_mode == false)
+    {
+    	GET_MEMBER_SYNC(m_data, m_factory_mode_data.m_z_reports[index]);
         data = m_data->m_factory_mode_data.m_z_reports[index];
+    }
     else
+    {
+    	GET_MEMBER_SYNC(m_data, m_user_mode_data.m_z_reports[index]);
         data = m_data->m_user_mode_data.m_z_reports[index];
+    }
 
     // get "year"
     year = data[8];
@@ -719,7 +768,7 @@ uint32_t Configuration::GetEntrySpace() {
         return 0;
     }
     count = GetNumberOfEntries();
-
+    LOGD("%s count %d", __FUNCTION__, __LINE__);
     if (m_user_mode == false)
         return NUMBER_OF_Z_REPORTS_FACTORY_MODE - count;
     else
@@ -729,7 +778,7 @@ uint32_t Configuration::GetEntrySpace() {
 
 /***********************************************************************/
 /*!
- *  Get Fiscal memory write status 
+ *  Get Fiscal memory write status
  *
  *   \return full (true), not full (false)
  */
@@ -744,12 +793,18 @@ bool Configuration::GetFullStatus() {
     }
 
     if (m_user_mode == false)
-        status = m_data->m_status_factory_mode_full;
+    {
+        status = GET_MEMBER_SYNC(m_data, m_status_factory_mode_full);
+    }
     else
-        status = m_data->m_status_user_mode_full;
-
+    {
+        status = GET_MEMBER_SYNC(m_data, m_status_user_mode_full);
+    }
+	LOGD("%s status %x", __FUNCTION__, status);
     if (status == STATUS_NOT_SET)
+    {
         return false;
+    }
 
     return true;
 }
@@ -762,9 +817,9 @@ bool Configuration::GetFullStatus() {
 /***********************************************************************/
 void Configuration::SetFullStatus() {
     if (m_user_mode == false)
-        WriteStatus(&(m_data->m_status_factory_mode_full));
+        WriteStatus(&(FM_DATA_BASE_ADDRESS->m_status_factory_mode_full));
     else
-        WriteStatus(&(m_data->m_status_user_mode_full));
+        WriteStatus(&(FM_DATA_BASE_ADDRESS->m_status_user_mode_full));
 }
 
 str_fmInfo Configuration::GetFmInfo()

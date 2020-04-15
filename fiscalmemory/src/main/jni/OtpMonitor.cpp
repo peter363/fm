@@ -74,15 +74,16 @@ void OtpMonitor::OtpMonitor_SyncMap()
 
 void OtpMonitor::OtpMonitor_SyncMapByArea(uint32_t addr, uint32_t len)
 {
-//    uint32_t align_addr_begin = addr / m_FmInfo.fm_single_read_size * m_FmInfo.fm_single_read_size;
-//    uint32_t align_addr_end = (addr + len) / m_FmInfo.fm_single_read_size * m_FmInfo.fm_single_read_size;
-//    //read all data
-//    LOGD("%s [%x %u] [%x - %x]", __FUNCTION__,  addr, len, align_addr_begin, align_addr_end);
-//    for(uint32_t i=align_addr_begin; i<=align_addr_end; i+=m_FmInfo.fm_single_read_size)
-//    {
-//        LOGD("Read %x", i);
-//        m_dev.ReadData(i, &m_map[i], m_FmInfo.fm_single_read_size);
-//    }
+    uint32_t align_addr_begin = addr / m_FmInfo.fm_single_read_size * m_FmInfo.fm_single_read_size;
+    uint32_t align_addr_end = ((addr + len) / m_FmInfo.fm_single_read_size + 1) * m_FmInfo.fm_single_read_size;
+    //read all data
+    LOGD("%s [%x %u] [%x - %x]", __FUNCTION__,  addr, len, align_addr_begin, align_addr_end);
+
+    for(uint32_t i=align_addr_begin; i<=align_addr_end; i+=m_FmInfo.fm_single_read_size)
+    {
+        //LOGD("Read %x", i);
+        m_dev.ReadData(i, &m_map[i], m_FmInfo.fm_single_read_size);
+    }
 }
 
 int32_t OtpMonitor::Open(FM_CONTEXT_t const *fm_ctx)
@@ -120,7 +121,7 @@ int32_t OtpMonitor::Open(FM_CONTEXT_t const *fm_ctx)
         LOGE("%s %d FM_HARDWARE_ERR\n", __FUNCTION__, __LINE__);
         LOGE("fm_type(%s) fm_size(%u) fm_version(%u), fm_single_read_size(0x%x) fm_single_write_size(0x%x) fm_erase_size(0x%x)\n",
                 m_FmInfo.fm_type, m_FmInfo.fm_size, m_FmInfo.fm_version, m_FmInfo.fm_single_read_size, m_FmInfo.fm_single_write_size,
-                m_FmInfo.fm_erase_size); 
+                m_FmInfo.fm_erase_size);
         m_dev.Close();
         mutex_unlock();
         return FM_HARDWARE_ERR;
@@ -135,7 +136,7 @@ int32_t OtpMonitor::Open(FM_CONTEXT_t const *fm_ctx)
         return FM_HARDWARE_ERR;
     }
 
-    OtpMonitor_SyncMap();
+    //OtpMonitor_SyncMap();
     m_OpenFlag = true;
 
     mutex_unlock();
@@ -184,7 +185,7 @@ str_fmInfo OtpMonitor::GetFmInfo()
     return m_FmInfo;
 }
 
-int32_t OtpMonitor::ReadByte(uint32_t addr, uint8_t &rd_byte) 
+int32_t OtpMonitor::ReadByte(uint32_t addr, uint8_t &rd_byte)
 {
     if(!m_OpenFlag)
     {
@@ -192,7 +193,7 @@ int32_t OtpMonitor::ReadByte(uint32_t addr, uint8_t &rd_byte)
         return FM_INVALID_IO;
     }
 
-    if(addr >= m_FmInfo.fm_size) 
+    if(addr >= m_FmInfo.fm_size)
     {
         LOGE("%s FM_INVALID_ADDR\n", __FUNCTION__);
         return FM_INVALID_ADDR;
@@ -211,7 +212,7 @@ int32_t OtpMonitor::ReadData(uint32_t addr, void * rd_buf, uint32_t rd_len)
         return FM_INVALID_IO;
     }
 
-    if((addr >= m_FmInfo.fm_size) || ((addr + rd_len) > m_FmInfo.fm_size))  
+    if((addr >= m_FmInfo.fm_size) || ((addr + rd_len) > m_FmInfo.fm_size))
     {
         LOGE("%s FM_INVALID_ADDR\n", __FUNCTION__);
         return FM_INVALID_ADDR;
@@ -229,13 +230,13 @@ int32_t OtpMonitor::ReadData(uint32_t addr, void * rd_buf, uint32_t rd_len)
 int32_t OtpMonitor::WriteData(uint32_t addr, void const* wr_buf, uint32_t wr_len)
 {
     int ret;
-    
+
     if(!m_OpenFlag)
     {
         return FM_INVALID_IO;
     }
 
-    if((addr >= m_FmInfo.fm_size) || ((addr + wr_len) > m_FmInfo.fm_size)) 
+    if((addr >= m_FmInfo.fm_size) || ((addr + wr_len) > m_FmInfo.fm_size))
     {
         LOGE("%s addr(%x) wr_len(%x) size(%x) FM_INVALID_ADDR\n", __FUNCTION__, addr, wr_len, m_FmInfo.fm_size);
         return FM_INVALID_ADDR;
@@ -256,7 +257,7 @@ int32_t OtpMonitor::WriteData(uint32_t addr, void const* wr_buf, uint32_t wr_len
     while(write_len > 0)
     {
         uint32_t len;
-        
+
         if((write_addr + write_len) > align_addr_end)
         {
             len = align_addr_end - write_addr;
@@ -275,12 +276,12 @@ int32_t OtpMonitor::WriteData(uint32_t addr, void const* wr_buf, uint32_t wr_len
             return ret;
         }
         //copy buf
-        memcpy(&m_map[write_addr], &(((uint8_t const *)wr_buf)[write_addr - addr]), len); 
+        memcpy(&m_map[write_addr], &(((uint8_t const *)wr_buf)[write_addr - addr]), len);
         write_addr += len;
         write_len  -= len;
         align_addr_end += m_FmInfo.fm_single_write_size;
-    } 
-    mutex_unlock();   
+    }
+    mutex_unlock();
     return wr_len;
 }
 

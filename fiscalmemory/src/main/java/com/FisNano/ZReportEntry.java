@@ -1,5 +1,7 @@
 package com.FisNano;
 
+import java.util.Objects;
+
 /**
  * @Description:
  * @Author: zys
@@ -11,6 +13,8 @@ public class ZReportEntry {
     private static final String TAG = "ZReportEntry";
 
     private static final int YEAR_BASELINE = 2000;
+
+    int test_index;
 
     int sales_total;//in cent
 
@@ -29,6 +33,14 @@ public class ZReportEntry {
     short serial_number;
 
     byte crc8;
+
+    public int getTest_index() {
+        return test_index;
+    }
+
+    public void setTest_index(int test_index) {
+        this.test_index = test_index;
+    }
 
     public int getSales_total() {
         return sales_total;
@@ -202,5 +214,26 @@ public class ZReportEntry {
                 ", serial_number=" + serial_number +
                 ", crc8=" + crc8 +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ZReportEntry that = (ZReportEntry) o;
+        return sales_total == that.sales_total &&
+                sales_tax == that.sales_tax &&
+                year == that.year &&
+                month == that.month &&
+                day == that.day &&
+                hour == that.hour &&
+                minute == that.minute &&
+                serial_number == that.serial_number &&
+                crc8 == that.crc8;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sales_total, sales_tax, year, month, day, hour, minute, serial_number, crc8);
     }
 }

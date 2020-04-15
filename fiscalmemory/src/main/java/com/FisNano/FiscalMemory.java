@@ -198,10 +198,9 @@ public class FiscalMemory {
     /**
      * 根据Num设置的索引值，获取Z报表数据
      *
-     * @param Num Z报表索引值
      * @return Z报表数据
      */
-    public native byte[] GetEntryData(int Num);
+    public native byte[] GetEntryData();
 
     /**
      * 根据Num设置的索引值，写入Z报表数据

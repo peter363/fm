@@ -6,4 +6,7 @@
     <string name="fmt_time">%1$d,%2$d</string>
 
     <string name="write_zreport_test">\nWrite %ds ZReport Test...</string>
+
+    <string name="fmt_read_zreport">Get index:%1$d, %2$s\n</string>
+    <string name="fmt_read_zreport_compare">Get index:%1$d\nRead->%2$s\nCache->%3$s\nequal:%4$s\n</string>
 </resources>

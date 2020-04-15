@@ -75,7 +75,7 @@ JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetEntryIndex
  * Signature: ()[B
  */
 JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetEntryData
-  (JNIEnv *, jobject, jint);
+  (JNIEnv *, jobject);
 
 /*
  * Class:     com_FisNano_FiscalMemory

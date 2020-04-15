@@ -1,10 +1,10 @@
 package com.FisNano.serialdemo;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 
 import com.FisNano.FiscalMemory;
@@ -19,7 +19,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ScrollView;
@@ -28,23 +27,33 @@ import android.content.Context;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 //import android.hardware.SerialManager;
 
 
 public class MainActivity extends Activity {
     static String TAG = "FiscalMem";
 
+    private static final int HANDLER_WRITE_SUCCEED = 1;
+    private static final int HANDLER_WRITE_COMPLETE = 2;
+    private static final int HANDLER_READ_SUCCEED = 3;
+    private static final int HANDLER_READ_COMPLETE = 4;
+    private static final int HANDLER_READ_COMPARE = 5;
+    private static final int HANDLER_READ_COMPARE_COMPLETE = 6;
+
     TextView m_ConsoleText;
     ScrollView m_ScrollView;
     FiscalMemory m_FiscalFmemory;
     String oriContent = null;
 
+    List<ZReportEntry> cacheZReportEntrys = new ArrayList<ZReportEntry>();
+
     Handler mHandler = new Handler() {
+        @SuppressLint("HandlerLeak")
         @Override
         public void handleMessage(Message msg) {
             if (0 == msg.what) {
@@ -55,18 +64,43 @@ public class MainActivity extends Activity {
                 String str = (String) msg.obj;
                 m_ConsoleText.setText(m_ConsoleText.getText() + str + "\n");
                 m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
-            } else if (1 == msg.what) {
+            } else if (HANDLER_WRITE_SUCCEED == msg.what) {
 
                 if (TextUtils.isEmpty(oriContent)) {
                     oriContent = m_ConsoleText.getText().toString();
                 }
 
-                m_ConsoleText.setText(oriContent + getString(R.string.write_zreport_test, COUNT));
+                int count = (int) msg.obj;
 
-            } else if (2 == msg.what) {
+                m_ConsoleText.setText(oriContent + getString(R.string.write_zreport_test, count));
+            } else if (HANDLER_WRITE_COMPLETE == msg.what) {
+                loopCount = -1;
                 oriContent = m_ConsoleText.getText().toString();
-
                 m_ConsoleText.setText(oriContent + "Complete " + getString(R.string.write_zreport_test, loopCount) + "\n");
+            } else if (HANDLER_READ_SUCCEED == msg.what) {
+                oriContent = m_ConsoleText.getText().toString();
+                ZReportEntry zReportEntry = (ZReportEntry) msg.obj;
+                m_ConsoleText.setText(oriContent + getString(R.string.fmt_read_zreport, zReportEntry.getTest_index(), zReportEntry.toString()) + "\n");
+                m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+            } else if (HANDLER_READ_COMPLETE == msg.what) {
+                loopCount = -1;
+                oriContent = m_ConsoleText.getText().toString();
+                m_ConsoleText.setText(oriContent + "Complete...\n");
+            } else if (HANDLER_READ_COMPARE == msg.what) {
+                oriContent = m_ConsoleText.getText().toString();
+                ZReportEntry zReportEntry = (ZReportEntry) msg.obj;
+
+                ZReportEntry oriZReportEntry = cacheZReportEntrys.get(zReportEntry.getTest_index());
+
+                m_ConsoleText.setText(oriContent + getString(R.string.fmt_read_zreport_compare, zReportEntry.getTest_index(),
+                        zReportEntry.toString(), oriZReportEntry.toString(), zReportEntry.equals(oriZReportEntry)));
+                m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+
+                if (!zReportEntry.equals(oriZReportEntry)) {
+                    stop = true;
+                }
+            } else if (HANDLER_READ_COMPARE_COMPLETE == msg.what) {
+                m_ConsoleText.setText(m_ConsoleText.getText().toString() + "Complete...\n");
             }
         }
     };
@@ -81,9 +115,11 @@ public class MainActivity extends Activity {
     private TextView mTvDailySalesDateEnd;
     private TextView mTvDailySalesTimeEnd;
     private EditText mEtStart2EndIndex;
+    private EditText mEtReadZReportIndex;
     private AlertDialog openingDialog;
 
-    private int loopCount = 0;
+    private int loopCount = -1;
+    private boolean stop = false;
     private static final int COUNT = 2500;
 
     @Override
@@ -109,6 +145,7 @@ public class MainActivity extends Activity {
         mTvDailySalesDateEnd = (TextView) findViewById(R.id.tv_dailysales_date_end);
         mTvDailySalesTimeEnd = (TextView) findViewById(R.id.tv_dailysales_time_end);
 
+        mEtReadZReportIndex = (EditText) findViewById(R.id.et_read_zreport_index);
         mEtStart2EndIndex = (EditText) findViewById(R.id.et_start_to_end_index);
         mEtStart2EndIndex.addTextChangedListener(new TextWatcher() {
             @Override
@@ -188,7 +225,9 @@ public class MainActivity extends Activity {
                     @Override
                     public void onDateSet(DatePicker datePicker,
                                           int year, int month, int dayOfMonth) {
-                        tv.setText(getString(R.string.fmt_date, year, month + 1, dayOfMonth));
+                        String fmt = getString(R.string.fmt_date, year, month + 1, dayOfMonth);
+                        android.util.Log.e(TAG, "[zys-->showDatePickerDialog] fmt:" + fmt);
+                        tv.setText(fmt);
                     }
                 },
                 calendar.get(Calendar.YEAR),
@@ -294,12 +333,19 @@ public class MainActivity extends Activity {
                 try {
                     byte[] fis = m_FiscalFmemory.GetFiscalCode();
                     if (fis != null) {
-                        OutStr += "GetFiscalCode:" + AsciiToString(fis) + "\r\n";
+                        OutStr += "GetFiscalCode:" + AsciiToString(fis);
+                    } else {
+                        OutStr += "GetFiscalCode: NULL";
                     }
+                    OutStr += "\n";
                     byte[] fisnum = m_FiscalFmemory.GetFiscalNumber();
                     if (fisnum != null) {
-                        OutStr += "GetFiscalNum:" + AsciiToString(fisnum) + "\r\n";
+                        OutStr += "GetFiscalNum:" + AsciiToString(fisnum);
+                    } else {
+                        OutStr += "GetFiscalNum: NULL";
                     }
+
+                    OutStr += "\n";
 
                 } catch (IllegalArgumentException | UnsupportedEncodingException e) {
                     e.printStackTrace();
@@ -342,20 +388,34 @@ public class MainActivity extends Activity {
 
                 ret = m_FiscalFmemory.SetEntryData(zReportData);
 
-                OutStr += (ret == FiscalMemory.CMD_OK) ? "Success" : "Fail";
-
+                OutStr += (ret == FiscalMemory.CMD_OK) ? "Write Z Report Success\n" + zReportEntry.toString() : "Write Z Report Fail";
+                OutStr += "\n";
                 break;
 
             case R.id.btn_read_z_report:
 
-//                int i = m_FiscalFmemory.SetEntryIndex(0);
-                byte[] bytes = m_FiscalFmemory.GetEntryData(0);
+                String zreportIndex = mEtReadZReportIndex.getText().toString();
+                if (TextUtils.isEmpty(zreportIndex)) {
+                    zreportIndex = "0";
+                }
 
-                android.util.Log.e(TAG, "[zys-->] read:" + bytes2BinaryStr(bytes));
+                int index = Integer.parseInt(zreportIndex);
 
-                ZReportEntry zReportEntry1 = ZReportEntry.parseEntry(bytes);
+                ret = m_FiscalFmemory.SetEntryIndex(index);
 
-                OutStr += "\n" + zReportEntry1.toString();
+                if (ret == FiscalMemory.CMD_OK) {
+                    byte[] bytes = m_FiscalFmemory.GetEntryData();
+
+                    android.util.Log.e(TAG, "[zys-->] read:" + bytes2BinaryStr(bytes));
+
+                    ZReportEntry zReportEntry1 = ZReportEntry.parseEntry(bytes);
+
+                    OutStr += "Get index:" + index + " " + zReportEntry1.toString();
+                } else {
+                    OutStr += "Get index:" + index + " Z Report is Empty.";
+                }
+
+                OutStr += "\n";
 
                 break;
 
@@ -371,7 +431,7 @@ public class MainActivity extends Activity {
 
                 boolean b = m_FiscalFmemory.GetFullStatus();
 
-                OutStr += b ? "FiscalMemory is full\n" : "FiscalMemory is have space\n";
+                OutStr += b ? "FiscalMemory is full\n" : "FiscalMemory have space\n";
 
                 break;
 
@@ -456,7 +516,6 @@ public class MainActivity extends Activity {
 
             case R.id.tv_dailysales_time_start:
                 mEtStart2EndIndex.setText("");
-                mEtStart2EndIndex.setText("");
                 showTimePickerDialog(this, mTvDailySalesTimeStart, Calendar.getInstance());
 
                 return;
@@ -478,47 +537,191 @@ public class MainActivity extends Activity {
                 loopWriteZReportEntry();
 
                 break;
+            case R.id.btn_write_loop_z_report_stop:
+                stop = true;
+                break;
+            case R.id.btn_read_all_z_report:
+                loopReadAllZReportEntry();
+                break;
+
+            case R.id.btn_read_range_compared_z_report:
+                loopReadZReportEntry2Compared();
+                break;
 
             default:
                 return;
         }
 
         m_ConsoleText.setText(m_ConsoleText.getText() + OutStr + "\r\n");
-        m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+            }
+        });
     }
 
-    private void loopWriteZReportEntry() {
-        final ZReportEntry zReportEntry = createZReportEntry();
-        if (zReportEntry == null) {
+    private void loopReadZReportEntry2Compared() {
+        stop = false;
+
+        if (cacheZReportEntrys.size() == 0) {
+
+            Toast.makeText(this, "First Click Read All ZReport Button to Cache ZReport Lists.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        loopCount = 0;
+        String start2endIndex = mEtStart2EndIndex.getText().toString();
+        String[] split = start2endIndex.split(",");
+        final int start = Integer.parseInt(split[0]);
+        final int end = Integer.parseInt(split[1]);
 
-        new Thread() {
-            @Override
-            public void run() {
+        if (loopCount == -1) {
+            new Thread() {
+                @Override
+                public void run() {
+                    loopCount = start;
+                    int count = end + 1;
+                    while (loopCount < count && !stop) {
 
-                while (loopCount < COUNT && loopCount != -1) {
-                    byte[] zReportData = zReportEntry.getZReportData();
-
-                    int ret = m_FiscalFmemory.SetEntryData(zReportData);
-                    if (ret == FiscalMemory.CMD_OK) {
-                        if (loopCount == 0) {
-                            mHandler.sendEmptyMessage(1);
+                        int ret = m_FiscalFmemory.SetEntryIndex(loopCount);
+                        if (ret == FiscalMemory.CMD_OK) {
+                            byte[] bytes = m_FiscalFmemory.GetEntryData();
+                            if (bytes != null) {
+                                ZReportEntry zReportEntry = ZReportEntry.parseEntry(bytes);
+                                zReportEntry.setTest_index(loopCount);
+                                Message message = mHandler.obtainMessage();
+                                message.what = HANDLER_READ_COMPARE;
+                                message.obj = zReportEntry;
+                                mHandler.sendMessage(message);
+                            }
                         }
-                    } else {
-                        mHandler.sendEmptyMessage(2);
-                        return;
-                    }
-                    loopCount++;
-                    if (loopCount == COUNT) {
-                        mHandler.sendEmptyMessage(2);
-                    }
-                }
 
+                        loopCount++;
+                        if (loopCount == count) {
+                            mHandler.sendEmptyMessage(HANDLER_READ_COMPARE_COMPLETE);
+                        }
+                    }
+
+                    loopCount = -1;
+
+                }
+            }.start();
+        }
+    }
+
+    private void loopReadAllZReportEntry() {
+        oriContent = null;
+        stop = false;
+        if (loopCount == -1) {
+            new Thread() {
+                @Override
+                public void run() {
+
+                    loopCount = 0;
+                    int count = m_FiscalFmemory.GetNumberOfEntries();
+                    cacheZReportEntrys.clear();
+
+                    while (loopCount < count && !stop) {
+
+                        int ret = m_FiscalFmemory.SetEntryIndex(loopCount);
+
+                        if (ret == FiscalMemory.CMD_OK) {
+                            byte[] bytes = m_FiscalFmemory.GetEntryData();
+                            if (bytes != null) {
+                                ZReportEntry zReportEntry = ZReportEntry.parseEntry(bytes);
+
+                                cacheZReportEntrys.add(zReportEntry);
+
+                                zReportEntry.setTest_index(loopCount);
+                                Message message = mHandler.obtainMessage();
+                                message.what = HANDLER_READ_SUCCEED;
+                                message.obj = zReportEntry;
+                                mHandler.sendMessage(message);
+                            } else {
+
+                            }
+                        } else {
+                        }
+
+                        loopCount++;
+                        if (loopCount == count) {
+                            mHandler.sendEmptyMessage(HANDLER_READ_COMPLETE);
+                        }
+                    }
+
+                    loopCount = -1;
+                }
+            }.start();
+        }
+    }
+
+    private void loopWriteZReportEntry() {
+        if (loopCount == -1) {
+            final ZReportEntry zReportEntry = createZReportEntry();
+            if (zReportEntry == null) {
+                return;
             }
-        }.start();
+            stop = false;
+            oriContent = null;
+
+            new Thread() {
+                @Override
+                public void run() {
+
+                    int count = m_FiscalFmemory.GetNumberOfEntries();
+                    loopCount = count;
+
+                    while (loopCount < COUNT && !stop) {
+                        byte[] zReportData = zReportEntry.getZReportData();
+
+                        int ret = m_FiscalFmemory.SetEntryData(zReportData);
+                        if (ret == FiscalMemory.CMD_OK) {
+
+                            cacheZReportEntrys.add(zReportEntry);
+
+                            Message message = mHandler.obtainMessage();
+                            message.what = HANDLER_WRITE_SUCCEED;
+                            message.obj = loopCount;
+                            mHandler.sendMessage(message);
+                        } else {
+                            mHandler.sendEmptyMessage(HANDLER_WRITE_COMPLETE);
+                            return;
+                        }
+                        loopCount++;
+                        if (loopCount == COUNT) {
+                            mHandler.sendEmptyMessage(HANDLER_WRITE_COMPLETE);
+                        }
+                    }
+
+                    loopCount = -1;
+
+                }
+            }.start();
+        }
+    }
+
+    private ZReportEntry createZReportEntryIncrementTime(ZReportEntry z) {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.YEAR, z.getYear());
+        c.set(Calendar.MONTH, z.getMonth() - 1);
+        c.set(Calendar.DAY_OF_MONTH, z.getDay());
+        c.set(Calendar.HOUR_OF_DAY, z.getHour());
+        c.set(Calendar.MINUTE, z.getMonth());
+        c.add(Calendar.MINUTE, 30);
+
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH) + 1;
+        int day = c.get(Calendar.DAY_OF_MONTH);
+        int hour = c.get(Calendar.HOUR_OF_DAY);
+        int minute = c.get(Calendar.MINUTE);
+
+        z.setYear(year);
+        z.setMonth(month);
+        z.setDay(day);
+        z.setHour(hour);
+        z.setMinute(minute);
+
+        return z;
     }
 
     private ZReportEntry createZReportEntry() {
@@ -538,7 +741,7 @@ public class MainActivity extends Activity {
         String[] split1 = date.split(",");
         int year = Integer.parseInt(split1[0]);
         int month = Integer.parseInt(split1[1]);
-        short day = Short.parseShort(split1[2]);
+        int day = Short.parseShort(split1[2]);
 
         String[] split2 = time.split(",");
         int hour = Integer.parseInt(split2[0]);
@@ -572,7 +775,13 @@ public class MainActivity extends Activity {
             int s_hour = Integer.parseInt(split2[0]);
             int s_min = Integer.parseInt(split2[1]);
 
-            Date startDate = new Date(s_year, s_month, s_day, s_hour, s_min);
+            Calendar c = Calendar.getInstance();
+            c.set(Calendar.YEAR, s_year);
+            c.set(Calendar.MONTH, s_month - 1);
+            c.set(Calendar.DAY_OF_MONTH, s_day);
+            c.set(Calendar.HOUR_OF_DAY, s_hour);
+            c.set(Calendar.MINUTE, s_min);
+            Date startDate = c.getTime();
 
             String s3 = mTvDailySalesDateEnd.getText().toString();
             String[] split3 = s3.split(",");
@@ -586,7 +795,13 @@ public class MainActivity extends Activity {
             int e_hour = Integer.parseInt(split4[0]);
             int e_min = Integer.parseInt(split4[1]);
 
-            Date endDate = new Date(e_year, e_month, e_day, e_hour, e_min);
+            c = Calendar.getInstance();
+            c.set(Calendar.YEAR, e_year);
+            c.set(Calendar.MONTH, e_month - 1);
+            c.set(Calendar.DAY_OF_MONTH, e_day);
+            c.set(Calendar.HOUR_OF_DAY, e_hour);
+            c.set(Calendar.MINUTE, e_min);
+            Date endDate = c.getTime();
 
             m_FiscalFmemory.SetDailySalesTotalSumRangeByDateTime(startDate, endDate);
         } else {

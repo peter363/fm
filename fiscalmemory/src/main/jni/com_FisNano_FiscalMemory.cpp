@@ -231,9 +231,8 @@ extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetEntryIndex
  * Signature: ()[B
  */
 extern "C" JNIEXPORT jbyteArray JNICALL Java_com_FisNano_FiscalMemory_GetEntryData
-  (JNIEnv * env, jobject self, jint index)
+  (JNIEnv * env, jobject self)
 {
-
     uint8_t rd_buf[FlashManager::ENTRY_SIZE + 4];
     uint8_t get_len = FlashManager::ENTRY_SIZE;
 
