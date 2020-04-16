@@ -66,13 +66,13 @@ public class MainActivity extends Activity {
                 m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
             } else if (HANDLER_WRITE_SUCCEED == msg.what) {
 
-                if (TextUtils.isEmpty(oriContent)) {
-                    oriContent = m_ConsoleText.getText().toString();
-                }
+                oriContent = m_ConsoleText.getText().toString();
 
-                int count = (int) msg.obj;
+                ZReportEntry zReportEntry = (ZReportEntry) msg.obj;
 
-                m_ConsoleText.setText(oriContent + getString(R.string.write_zreport_test, count + 1));
+                m_ConsoleText.setText(oriContent + getString(R.string.write_zreport_test, zReportEntry.getTest_index() + 1, zReportEntry.toString()));
+                m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+                m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
             } else if (HANDLER_WRITE_COMPLETE == msg.what) {
                 loopCount = -1;
                 oriContent = m_ConsoleText.getText().toString();
@@ -653,10 +653,7 @@ public class MainActivity extends Activity {
 
     private void loopWriteZReportEntry() {
         if (loopCount == -1) {
-            final ZReportEntry zReportEntry = createZReportEntry();
-            if (zReportEntry == null) {
-                return;
-            }
+
             stop = false;
             oriContent = null;
             cacheZReportEntrys.clear();
@@ -665,10 +662,13 @@ public class MainActivity extends Activity {
                 @Override
                 public void run() {
 
+                    ZReportEntry zReportEntry = createZReportEntry();
+
                     int count = m_FiscalFmemory.GetNumberOfEntries();
                     loopCount = count;
 
                     while (loopCount < COUNT && !stop && loopCount != -1) {
+                        zReportEntry = createZReportEntryIncrementTime(zReportEntry);
                         byte[] zReportData = zReportEntry.getZReportData();
 
                         int ret = m_FiscalFmemory.SetEntryData(zReportData);
@@ -679,10 +679,12 @@ public class MainActivity extends Activity {
 
                             cacheZReportEntrys.add(zReportEntry);
 
+                            zReportEntry.setTest_index(loopCount);
                             Message message = mHandler.obtainMessage();
                             message.what = HANDLER_WRITE_SUCCEED;
-                            message.obj = loopCount;
+                            message.obj = zReportEntry;
                             mHandler.sendMessage(message);
+
                         } else {
                             loopCount = -1;
                             mHandler.sendEmptyMessage(HANDLER_WRITE_COMPLETE);
@@ -708,7 +710,8 @@ public class MainActivity extends Activity {
         c.set(Calendar.DAY_OF_MONTH, z.getDay());
         c.set(Calendar.HOUR_OF_DAY, z.getHour());
         c.set(Calendar.MINUTE, z.getMonth());
-        c.add(Calendar.MINUTE, 30);
+
+        c.add(Calendar.HOUR_OF_DAY, 1);
 
         int year = c.get(Calendar.YEAR);
         int month = c.get(Calendar.MONTH) + 1;
