@@ -232,6 +232,7 @@ int32_t Configuration::WriteStatus(const Status *addr) {
  */
 /***********************************************************************/
 void Configuration::EnableUserMode(bool enable) {
+	LOGD("%s %s", __FUNCTION__, enable?"1":"0");
     m_user_mode = enable;
 }
 
@@ -249,12 +250,19 @@ int32_t Configuration::SetFiscalCode(const uint8_t *data, int data_len) {
          data, data_len);
     int32_t ret = WriteString(FM_DATA_BASE_ADDRESS->m_fiscal_code, data, data_len, FISCAL_CODE_SIZE);
     LOGD("%s %d (%d)", __FUNCTION__, __LINE__, ret);
-    if(ret > 0)
-    {
-        ret = WriteStatus(&(FM_DATA_BASE_ADDRESS->m_status_fiscal_code));
-    }
+	if(ret < 0)
+	{
+		LOGE("%s %d", __FUNCTION__, ret);
+		return ret;
+	}
+    ret = WriteStatus(&(FM_DATA_BASE_ADDRESS->m_status_fiscal_code));
+	if(ret < 0)
+	{
+		LOGE("%s %d", __FUNCTION__, ret);
+		return ret;
+	}
     LOGD("%s %d (%d)", __FUNCTION__, __LINE__, ret);
-    return ret;
+    return FM_SUCCESS;
 }
 
 
@@ -303,12 +311,19 @@ int32_t Configuration::SetFiscalNumber(const uint8_t *data, int data_len) {
     LOGD("%s %s %d", __FUNCTION__, data, data_len);
     int32_t ret = WriteString(FM_DATA_BASE_ADDRESS->m_fiscal_number, data, data_len, FISCAL_NUMBER_SIZE);
     LOGD("%s %d (%d)", __FUNCTION__, __LINE__, ret);
-    if(ret > 0)
-    {
-        ret = WriteStatus(&(FM_DATA_BASE_ADDRESS->m_status_fiscal_number));
-    }
+	if(ret < 0)
+	{
+		LOGE("%s %d", __FUNCTION__, ret);
+		return ret;
+	}
+    ret = WriteStatus(&(FM_DATA_BASE_ADDRESS->m_status_fiscal_number));
+	if(ret < 0)
+	{
+		LOGE("%s %d", __FUNCTION__, ret);
+		return ret;
+	}
     LOGD("%s (%d)", __FUNCTION__, ret);
-    return ret;
+    return FM_SUCCESS;
 }
 
 
@@ -494,14 +509,16 @@ void Configuration::CalculateNumberOfEntries() {
 
     // all entries used (factory mode)?
     if (used == true)
+    {
         m_number_of_entries_factory_mode = NUMBER_OF_Z_REPORTS_FACTORY_MODE;
+    }
 
     // search first unused entry (user mode)
     GET_MEMBER_SYNC(m_data,m_user_mode_data);
     for (int i = 0; i < NUMBER_OF_Z_REPORTS_USER_MODE; i++) {
         used = false;
 
-        ZReportEntry const &entry = m_data->m_factory_mode_data.m_z_reports[i];
+        ZReportEntry const &entry = m_data->m_user_mode_data.m_z_reports[i];
 
         for (int a = 0; a < Z_REPORT_ENTRY_SIZE; a++) {
             if (entry[a] != 0xff) {
@@ -518,7 +535,11 @@ void Configuration::CalculateNumberOfEntries() {
 
     // all entries used (factory mode)?
     if (used == true)
+    {
         m_number_of_entries_user_mode = NUMBER_OF_Z_REPORTS_USER_MODE;
+    }
+
+    LOGD("%s factory: %d user: %d", __FUNCTION__, m_number_of_entries_factory_mode, m_number_of_entries_user_mode);
 }
 
 
@@ -747,6 +768,7 @@ uint32_t Configuration::GetDateTime(int index) {
     // get "minute"
     minute = ((data[10] >> 6) & 0x03) | ((data[11] & 0x0f) << 2);
 
+    LOGD("%u_%02u%02u_%02u%02u", year, month, day, hour, minute);
     // calculate/return result
     return minute + hour * 60 + day * 24 * 60 + month * 24 * 60 * 31 + year * 24 * 60 * 31 * 12;
 }
@@ -768,7 +790,7 @@ uint32_t Configuration::GetEntrySpace() {
         return 0;
     }
     count = GetNumberOfEntries();
-    LOGD("%s count %d", __FUNCTION__, __LINE__);
+    LOGD("%s count %d", __FUNCTION__, count);
     if (m_user_mode == false)
         return NUMBER_OF_Z_REPORTS_FACTORY_MODE - count;
     else

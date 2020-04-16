@@ -163,12 +163,6 @@ int FlashManager::SetFiscalNumber(const uint8_t* pBuffer, int number_of_bytes)
     return CMD_ARGUMENT_INVALID;
   }
 
-  // check parameters
-  if(number_of_bytes != FISCAL_NUMBER_MAX_SIZE) {
-    LOGE("%s %d CMD_DATA_INCOMPLETE", __FUNCTION__, __LINE__);
-    return CMD_DATA_INCOMPLETE;
-  }
-
   // check paramezers
   if((number_of_bytes < FISCAL_NUMBER_MIN_SIZE) ||
      (number_of_bytes > FISCAL_NUMBER_MAX_SIZE))
@@ -472,6 +466,7 @@ int FlashManager::SetDailySalesTotalStartStop_DateTime (uint32_t start_date_time
   // search start index
   for (int i=0; i < entries; i++)
   {
+      LOGD("%s %u check [ %u - %u ]", __FUNCTION__, m_config.GetDateTime(i), start_date_time, stop_date_time);
     if (m_config.GetDateTime (i) >= start_date_time)
     {
       if (m_config.GetDateTime (i) <= stop_date_time)
@@ -562,18 +557,23 @@ int FlashManager::SetFiscalRevolvingAmount(const uint8_t* pBuffer, int number_of
   // assertions
   if(pBuffer == nullptr)
   {
+      LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
       return CMD_ARGUMENT_INVALID;
   }
 
   // check parameters
   if(number_of_bytes != REVOLVING_AMOUNT_SIZE)
   {
+      LOGE("%s %d CMD_ARGUMENT_INVALID", __FUNCTION__, __LINE__);
       return CMD_ARGUMENT_INVALID;
   }
 
   // already set?
   if (m_config.GetFiscalRevolvingAmountStatus() == true)
-    return CMD_FISCAL_NUMBER_AND_CODE_HAS_BEEN_ALREADY_SET;
+  {
+      LOGE("%s %d CMD_FISCAL_NUMBER_AND_CODE_HAS_BEEN_ALREADY_SET", __FUNCTION__, __LINE__);
+      return CMD_ARGUMENT_INVALID;
+  }
 
   // store fiscal revolving amount
   m_config.SetFiscalRevolvingAmount(pBuffer, number_of_bytes);
@@ -594,15 +594,24 @@ int FlashManager::GetFiscalRevolvingAmount(uint8_t* pBuffer, uint8_t &number_of_
 {
   // assertions
   if(pBuffer == nullptr)
+  {
+  	  LOGE("%s CMD_ARGUMENT_INVALID", __FUNCTION__);
       return CMD_ARGUMENT_INVALID;
+  }
 
   // check parameters
   if(number_of_bytes != REVOLVING_AMOUNT_SIZE)
-    return CMD_ARGUMENT_INVALID;
+  {
+  	  LOGE("%s CMD_ARGUMENT_INVALID", __FUNCTION__);
+      return CMD_ARGUMENT_INVALID;
+  }
 
   // revolving amount set?
   if (m_config.GetFiscalRevolvingAmountStatus() == false)
-    return CMD_FISCAL_REVOLVING_AMOUNT_NOT_SET;
+  {
+  	  LOGE("%s CMD_FISCAL_REVOLVING_AMOUNT_NOT_SET", __FUNCTION__);
+      return CMD_FISCAL_REVOLVING_AMOUNT_NOT_SET;
+  }
 
   // get revolving amount
   m_config.GetFiscalRevolvingAmount(pBuffer, number_of_bytes);

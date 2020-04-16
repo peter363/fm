@@ -11,6 +11,9 @@ import android.util.Log;
 import android.content.Context;
 
 public class FiscalMemory {
+
+    private static final int BASE_YEAR = 2000;
+
     /**
      * 连接本地JNI动态库.
      */
@@ -71,13 +74,13 @@ public class FiscalMemory {
                 + start.getHours() * 60
                 + start.getDay() * 24 * 60
                 + start.getMonth() * 24 * 60 * 31
-                + start.getYear() * 24 * 60 * 31 * 12;
+                + (start.getYear() - BASE_YEAR) * 24 * 60 * 31 * 12;
 
         long end_date_val = end.getMinutes()
                 + end.getHours() * 60
                 + end.getDay() * 24 * 60
                 + end.getMonth() * 24 * 60 * 31
-                + end.getYear() * 24 * 60 * 31 * 12;
+                + (start.getYear() - BASE_YEAR) * 24 * 60 * 31 * 12;
 
         return SetDailySalesTotalSumRangeByDateTime(start_date_val, end_date_val);
     }

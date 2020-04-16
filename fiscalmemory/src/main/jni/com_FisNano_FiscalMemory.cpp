@@ -124,9 +124,9 @@ extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalCode
     LOGD("%s  %d len %d\n", __FUNCTION__, __LINE__, len);
     if (data != nullptr) {
         LOGE("%s data = %*.*s len %d\n", __FUNCTION__,  len, len, (char *)data, len);
-        m_FiscalMem->SetFiscalCode((const uint8_t *)data, len);
+        jint ret = m_FiscalMem->SetFiscalCode((const uint8_t *)data, len);
         env->ReleaseByteArrayElements(FiscalCode, data, JNI_ABORT);
-        return FlashManager::CMD_OK;
+        return ret;
     }
 
     return FlashManager::CMD_ARGUMENT_INVALID;
@@ -172,9 +172,9 @@ extern "C" JNIEXPORT jint JNICALL Java_com_FisNano_FiscalMemory_SetFiscalNumber(
     LOGD("%s  %d len %d\n", __FUNCTION__, __LINE__, len);
     if (data != NULL) {
         LOGE("%s data = %*.*s len %d\n", __FUNCTION__,  len, len, (char *)data, len);
-        m_FiscalMem->SetFiscalNumber((const uint8_t *)data, len);
+        jint ret = m_FiscalMem->SetFiscalNumber((const uint8_t *)data, len);
         env->ReleaseByteArrayElements(fiscal_num, data, JNI_ABORT);
-        return FlashManager::CMD_OK;
+        return ret;
     }
 
     return FlashManager::CMD_ARGUMENT_INVALID;
@@ -192,9 +192,9 @@ Java_com_FisNano_FiscalMemory_SetEntryData(JNIEnv *env, jobject thiz, jbyteArray
     LOGD("%s  %d len %d\n", __FUNCTION__, __LINE__, len);
     if (data != NULL) {
         LOGE("%s data = %*.*s len %d\n", __FUNCTION__,  len, len, (char *)data, len);
-        m_FiscalMem->SetEntry((const uint8_t *)data, len);
+        jint ret = m_FiscalMem->SetEntry((const uint8_t *)data, len);
         env->ReleaseByteArrayElements(entry_data, data, JNI_ABORT);
-        return FlashManager::CMD_OK;
+        return ret;
     }
 
     return FlashManager::CMD_ARGUMENT_INVALID;
@@ -302,9 +302,9 @@ Java_com_FisNano_FiscalMemory_SetFiscalRevolingAmount(JNIEnv *env, jobject thiz,
     LOGD("%s  %d len %d\n", __FUNCTION__, __LINE__, len);
     if (data != NULL) {
         LOGE("%s data = %*.*s len %d\n", __FUNCTION__,  len, len, (char *)data, len);
-        m_FiscalMem->SetFiscalRevolvingAmount((const uint8_t *)data, len);
+        jint ret = m_FiscalMem->SetFiscalRevolvingAmount((const uint8_t *)data, len);
         env->ReleaseByteArrayElements(revoling_amount, data, JNI_ABORT);
-        return FlashManager::CMD_OK;
+        return ret;
     }
 
     return FlashManager::CMD_ARGUMENT_INVALID;

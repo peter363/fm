@@ -72,11 +72,11 @@ public class MainActivity extends Activity {
 
                 int count = (int) msg.obj;
 
-                m_ConsoleText.setText(oriContent + getString(R.string.write_zreport_test, count));
+                m_ConsoleText.setText(oriContent + getString(R.string.write_zreport_test, count + 1));
             } else if (HANDLER_WRITE_COMPLETE == msg.what) {
                 loopCount = -1;
                 oriContent = m_ConsoleText.getText().toString();
-                m_ConsoleText.setText(oriContent + "Complete " + getString(R.string.write_zreport_test, loopCount) + "\n");
+                m_ConsoleText.setText(oriContent + "Complete.\n");
             } else if (HANDLER_READ_SUCCEED == msg.what) {
                 oriContent = m_ConsoleText.getText().toString();
                 ZReportEntry zReportEntry = (ZReportEntry) msg.obj;
@@ -469,7 +469,7 @@ public class MainActivity extends Activity {
 
                 byte[] revolingAmountBytes = m_FiscalFmemory.GetFiscalRevolingAmount();
                 if (revolingAmountBytes != null) {
-                    OutStr += "GetFiscalRevolingAmount : " + (revolingAmountBytes.toString());
+                    OutStr += "GetFiscalRevolingAmount : " + new String(revolingAmountBytes);
                 } else {
                     OutStr += "GetFiscalRevolingAmount : Empty";
                 }
@@ -536,17 +536,17 @@ public class MainActivity extends Activity {
 
                 loopWriteZReportEntry();
 
-                break;
+                return;
             case R.id.btn_write_loop_z_report_stop:
                 stop = true;
                 break;
             case R.id.btn_read_all_z_report:
                 loopReadAllZReportEntry();
-                break;
+                return;
 
             case R.id.btn_read_range_compared_z_report:
                 loopReadZReportEntry2Compared();
-                break;
+                return;
 
             default:
                 return;
@@ -621,17 +621,13 @@ public class MainActivity extends Activity {
                     int count = m_FiscalFmemory.GetNumberOfEntries();
                     cacheZReportEntrys.clear();
 
-                    while (loopCount < count && !stop) {
-
+                    while (loopCount < count && !stop && loopCount != -1) {
                         int ret = m_FiscalFmemory.SetEntryIndex(loopCount);
-
                         if (ret == FiscalMemory.CMD_OK) {
                             byte[] bytes = m_FiscalFmemory.GetEntryData();
                             if (bytes != null) {
                                 ZReportEntry zReportEntry = ZReportEntry.parseEntry(bytes);
-
                                 cacheZReportEntrys.add(zReportEntry);
-
                                 zReportEntry.setTest_index(loopCount);
                                 Message message = mHandler.obtainMessage();
                                 message.what = HANDLER_READ_SUCCEED;
@@ -663,6 +659,7 @@ public class MainActivity extends Activity {
             }
             stop = false;
             oriContent = null;
+            cacheZReportEntrys.clear();
 
             new Thread() {
                 @Override
@@ -671,10 +668,13 @@ public class MainActivity extends Activity {
                     int count = m_FiscalFmemory.GetNumberOfEntries();
                     loopCount = count;
 
-                    while (loopCount < COUNT && !stop) {
+                    while (loopCount < COUNT && !stop && loopCount != -1) {
                         byte[] zReportData = zReportEntry.getZReportData();
 
                         int ret = m_FiscalFmemory.SetEntryData(zReportData);
+
+                        android.util.Log.e(TAG, "[zys-->] loopCount:" + loopCount + ", ret:" + ret);
+
                         if (ret == FiscalMemory.CMD_OK) {
 
                             cacheZReportEntrys.add(zReportEntry);
@@ -684,8 +684,9 @@ public class MainActivity extends Activity {
                             message.obj = loopCount;
                             mHandler.sendMessage(message);
                         } else {
+                            loopCount = -1;
                             mHandler.sendEmptyMessage(HANDLER_WRITE_COMPLETE);
-                            return;
+                            break;
                         }
                         loopCount++;
                         if (loopCount == COUNT) {
