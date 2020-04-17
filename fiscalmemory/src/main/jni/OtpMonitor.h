@@ -22,6 +22,9 @@ private:
     static bool m_OpenFlag;
     str_fmInfo m_FmInfo;
     uint8_t *m_map;
+    uint8_t *m_map_mask;
+    bool OtpMonitor_TestSyncMapped(uint32_t addr);
+    void OtpMonitor_SetMapMask(uint32_t addr);
     ProtocolParser m_dev;
     void OtpMonitor_SyncMap();
 public:

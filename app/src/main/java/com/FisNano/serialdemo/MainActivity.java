@@ -677,13 +677,15 @@ public class MainActivity extends Activity {
 
                         if (ret == FiscalMemory.CMD_OK) {
 
-                            cacheZReportEntrys.add(zReportEntry);
 
                             zReportEntry.setTest_index(loopCount);
                             Message message = mHandler.obtainMessage();
                             message.what = HANDLER_WRITE_SUCCEED;
                             message.obj = zReportEntry;
                             mHandler.sendMessage(message);
+
+                            zReportEntry.setYear(zReportEntry.getYear() + 2000);
+                            cacheZReportEntrys.add(zReportEntry);
 
                         } else {
                             loopCount = -1;
@@ -768,8 +770,10 @@ public class MainActivity extends Activity {
         String start2endIndex = mEtStart2EndIndex.getText().toString();
         if (TextUtils.isEmpty(start2endIndex)) {
             String s1 = mTvDailySalesDateStart.getText().toString();
+            android.util.Log.e(TAG, "[zys-->] start:" + s1);
             String[] split1 = s1.split(",");
             String s2 = mTvDailySalesTimeStart.getText().toString();
+            android.util.Log.e(TAG, "[zys-->] start:" + s2);
             String[] split2 = s2.split(",");
 
             int s_year = Integer.parseInt(split1[0]);
@@ -779,17 +783,18 @@ public class MainActivity extends Activity {
             int s_hour = Integer.parseInt(split2[0]);
             int s_min = Integer.parseInt(split2[1]);
 
-            Calendar c = Calendar.getInstance();
-            c.set(Calendar.YEAR, s_year);
-            c.set(Calendar.MONTH, s_month - 1);
-            c.set(Calendar.DAY_OF_MONTH, s_day);
-            c.set(Calendar.HOUR_OF_DAY, s_hour);
-            c.set(Calendar.MINUTE, s_min);
-            Date startDate = c.getTime();
+            Calendar s = Calendar.getInstance();
+            s.set(Calendar.YEAR, s_year);
+            s.set(Calendar.MONTH, s_month - 1);
+            s.set(Calendar.DAY_OF_MONTH, s_day);
+            s.set(Calendar.HOUR_OF_DAY, s_hour);
+            s.set(Calendar.MINUTE, s_min);
 
             String s3 = mTvDailySalesDateEnd.getText().toString();
+            android.util.Log.e(TAG, "[zys-->] end:" + s3);
             String[] split3 = s3.split(",");
             String s4 = mTvDailySalesTimeEnd.getText().toString();
+            android.util.Log.e(TAG, "[zys-->] end:" + s4);
             String[] split4 = s4.split(",");
 
             int e_year = Integer.parseInt(split3[0]);
@@ -799,15 +804,14 @@ public class MainActivity extends Activity {
             int e_hour = Integer.parseInt(split4[0]);
             int e_min = Integer.parseInt(split4[1]);
 
-            c = Calendar.getInstance();
-            c.set(Calendar.YEAR, e_year);
-            c.set(Calendar.MONTH, e_month - 1);
-            c.set(Calendar.DAY_OF_MONTH, e_day);
-            c.set(Calendar.HOUR_OF_DAY, e_hour);
-            c.set(Calendar.MINUTE, e_min);
-            Date endDate = c.getTime();
+            Calendar e = Calendar.getInstance();
+            e.set(Calendar.YEAR, e_year);
+            e.set(Calendar.MONTH, e_month - 1);
+            e.set(Calendar.DAY_OF_MONTH, e_day);
+            e.set(Calendar.HOUR_OF_DAY, e_hour);
+            e.set(Calendar.MINUTE, e_min);
 
-            m_FiscalFmemory.SetDailySalesTotalSumRangeByDateTime(startDate, endDate);
+            m_FiscalFmemory.SetDailySalesTotalSumRangeByDateTime(s, e);
         } else {
             String[] split3 = start2endIndex.split(",");
 

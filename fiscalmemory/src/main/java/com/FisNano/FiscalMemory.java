@@ -2,6 +2,7 @@ package com.FisNano;
 
 import java.io.IOError;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Date;
 
 import android.content.Context;
@@ -69,18 +70,19 @@ public class FiscalMemory {
         return ClearCompleteCard();
     }
 
-    public int SetDailySalesTotalSumRangeByDateTime(Date start, Date end) {
-        long start_date_val = start.getMinutes()
-                + start.getHours() * 60
-                + start.getDay() * 24 * 60
-                + start.getMonth() * 24 * 60 * 31
-                + (start.getYear() - BASE_YEAR) * 24 * 60 * 31 * 12;
+    public int SetDailySalesTotalSumRangeByDateTime(Calendar c, Calendar e) {
 
-        long end_date_val = end.getMinutes()
-                + end.getHours() * 60
-                + end.getDay() * 24 * 60
-                + end.getMonth() * 24 * 60 * 31
-                + (start.getYear() - BASE_YEAR) * 24 * 60 * 31 * 12;
+        long start_date_val = c.get(Calendar.MINUTE)
+                + c.get(Calendar.HOUR_OF_DAY) * 60
+                + c.get(Calendar.DAY_OF_MONTH) * 24 * 60
+                + (c.get(Calendar.MONTH) + 1) * 24 * 60 * 31
+                + (c.get(Calendar.YEAR) - BASE_YEAR) * 24 * 60 * 31 * 12;
+
+        long end_date_val = e.get(Calendar.MINUTE)
+                + e.get(Calendar.HOUR_OF_DAY) * 60
+                + e.get(Calendar.DAY_OF_MONTH) * 24 * 60
+                + (e.get(Calendar.MONTH) + 1) * 24 * 60 * 31
+                + (e.get(Calendar.YEAR) - BASE_YEAR) * 24 * 60 * 31 * 12;
 
         return SetDailySalesTotalSumRangeByDateTime(start_date_val, end_date_val);
     }
