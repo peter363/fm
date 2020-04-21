@@ -1,4 +1,14 @@
 <resources>
     <string name="app_name">SerialDemo</string>
     <string name="action_settings">Settings</string>
+
+    <string name="fmt_date">%1$d,%2$d,%3$d</string>
+    <string name="fmt_time">%1$d,%2$d</string>
+
+    <string name="write_zreport_test">\nWrite %1$ds ZReport\n%2$s\n</string>
+
+    <string name="fmt_read_zreport">Get index:%1$d, %2$s\n</string>
+    <string name="fmt_read_zreport_compare">Get index:%1$d\nRead->%2$s\nCache->%3$s\nequal:%4$s\n</string>
+
+    <string name="fmt_loopfunc">%1$s\nTip->%2$d:%3$s</string>
 </resources>

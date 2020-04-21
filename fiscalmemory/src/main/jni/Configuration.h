@@ -1,6 +1,6 @@
 
 /*************************************************************
- 
+
    Copyright (c) 2008 telos EDV Systementwicklung GmbH,
    Hamburg (Germany)
 
@@ -37,13 +37,13 @@ class Configuration
 
     //! number of bytes used for one "Z report entry" (multiple of "4")
     static const int Z_REPORT_ENTRY_SIZE = 16;
-    
+
     //! number of "Z report entries" in "factory mode"
     static const int NUMBER_OF_Z_REPORTS_FACTORY_MODE = 12;
 
     //! number of "Z report entries" in "user mode"
     static const int NUMBER_OF_Z_REPORTS_USER_MODE = 2500;
-    
+
   private:
     //! size of one flash page
     static const int  FLASH_PAGE_SIZE = 1024;
@@ -85,7 +85,7 @@ class Configuration
       ZReportEntry  m_z_reports[NUMBER_OF_Z_REPORTS_USER_MODE];
     } __attribute__ ((__packed__));;
 
-    
+
     //! type to store all data
     struct Data
     {
@@ -181,7 +181,7 @@ class Configuration
 
     //! currently selected mode (user or factory)
     bool  m_user_mode;
-        
+
     uint32_t  m_number_of_entries_factory_mode;
 
     uint32_t  m_number_of_entries_user_mode;

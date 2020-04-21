@@ -2,6 +2,7 @@ package com.FisNano;
 
 import java.io.IOError;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Date;
 
 import android.content.Context;
@@ -11,6 +12,9 @@ import android.util.Log;
 import android.content.Context;
 
 public class FiscalMemory {
+
+    private static final int BASE_YEAR = 2000;
+
     /**
      * 连接本地JNI动态库.
      */
@@ -66,18 +70,19 @@ public class FiscalMemory {
         return ClearCompleteCard();
     }
 
-    public int SetDailySalesTotalSumRangeByDateTime(Date start, Date end) {
-        long start_date_val = start.getMinutes()
-                + start.getHours() * 60
-                + start.getDay() * 24 * 60
-                + start.getMonth() * 24 * 60 * 31
-                + start.getYear() * 24 * 60 * 31 * 12;
+    public int SetDailySalesTotalSumRangeByDateTime(Calendar c, Calendar e) {
 
-        long end_date_val = end.getMinutes()
-                + end.getHours() * 60
-                + end.getDay() * 24 * 60
-                + end.getMonth() * 24 * 60 * 31
-                + end.getYear() * 24 * 60 * 31 * 12;
+        long start_date_val = c.get(Calendar.MINUTE)
+                + c.get(Calendar.HOUR_OF_DAY) * 60
+                + c.get(Calendar.DAY_OF_MONTH) * 24 * 60
+                + (c.get(Calendar.MONTH) + 1) * 24 * 60 * 31
+                + (c.get(Calendar.YEAR) - BASE_YEAR) * 24 * 60 * 31 * 12;
+
+        long end_date_val = e.get(Calendar.MINUTE)
+                + e.get(Calendar.HOUR_OF_DAY) * 60
+                + e.get(Calendar.DAY_OF_MONTH) * 24 * 60
+                + (e.get(Calendar.MONTH) + 1) * 24 * 60 * 31
+                + (e.get(Calendar.YEAR) - BASE_YEAR) * 24 * 60 * 31 * 12;
 
         return SetDailySalesTotalSumRangeByDateTime(start_date_val, end_date_val);
     }
@@ -104,71 +109,172 @@ public class FiscalMemory {
     /************************************
      *    Operation for Hardware        *
      ************************************/
+    /**
+     * 获取固件信息
+     *
+     * @return 固件信息字符串，包含总容量（实际物理容量），读/写/擦除块大小
+     */
     public native String GetFirmwareInfo();
 
-    public native int ClearCompleteCard();
+    /**
+     * 清理FM中的所有数据，该接口仅供调试使用
+     *
+     * @return 返回值为Error Codes
+     */
+    private native int ClearCompleteCard();
 
+    /**
+     * 对FM记忆体实行软件复位
+     *
+     * @return 返回值为Error Codes
+     */
     public native int SoftwareReset();
 
     /************************************
      *    Operation for ConfigInfo       *
      ************************************/
+    /**
+     * 设置Fiscal Num
+     *
+     * @return 返回值为Error Codes
+     */
     public native int SetFiscalNumber(byte[] FiscalNum);
 
+    /**
+     * 设置Fiscal Code
+     *
+     * @return 返回值为Error Codes
+     */
     public native int SetFiscalCode(byte[] FiscalCode);
 
+    /**
+     * 获取已经写入的Fiscal Code,如果未写入返回空值
+     *
+     * @return FiscalCode数组
+     */
     public native byte[] GetFiscalCode();
 
+    /**
+     * 获取已经写入的Fiscal Num,如果未写入返回空值
+     *
+     * @return FiscalNum数组
+     */
     public native byte[] GetFiscalNumber();
 
+    /**
+     * 使能用户模式
+     *
+     * @return ErrorCode
+     */
     public native int SetMode(boolean EnableUserMode);
 
-    //    private native boolean GetFiscalNumberStatus();
-//    private native boolean GetFiscalCodeStatus();
-//    private native boolean GetFiscalRevolvingAmountStatus();
+    /**
+     * 判断卡是否已满
+     *
+     * @return true:卡已满  false:卡未满
+     */
     public native boolean GetFullStatus();
-//    private native void SetFullStatus();
 
     /************************************
      *    Operation for Entry           *
      ************************************/
-    /* Entries that has used */
+    /**
+     * 获取已经写入的Z报表数量
+     *
+     * @return 已经写入的Z报表数量
+     */
     public native int GetNumberOfEntries();
 
-    /* Entries that not used */
-    //private native int GetFreeEntries();
+    /**
+     * 获取Z报表剩余空间
+     *
+     * @return Z报表剩余空间
+     */
+    public native int GetFreeEntries();
 
-    /* Set Entry operate index */
+    /**
+     * 设置当前的Z报表索引值
+     *
+     * @param index Z报表索引值
+     * @return ErrCode
+     */
     public native int SetEntryIndex(int index);
 
-    /* Write Entry to EntryIndex */
-    public native int SendDataOfEntry();
+    /**
+     * 根据Num设置的索引值，获取Z报表数据
+     *
+     * @return Z报表数据
+     */
+    public native byte[] GetEntryData();
 
-    /* Read Entry from EntryIndex */
-    public native byte[] GetEntryData(int Num);
-
+    /**
+     * 根据Num设置的索引值，写入Z报表数据
+     *
+     * @param entryData Z报表数据
+     * @return ErrCode
+     */
     public native int SetEntryData(byte[] entryData);
 
-    public native int SetFiscalRevolingAmount();
+    public native int SetFiscalRevolingAmount(byte[] RevolingAmount);
 
-    public native int GetFiscalRevolingAmount();
+    public native byte[] GetFiscalRevolingAmount();
 
     /************************************
      *    Operation for DailyInfo       *
      ************************************/
+    /**
+     * 获取日销售额总和,该函数根据目前Z报表已有数据计算
+     *
+     * @return 日销售额总和
+     */
     public native long GetDailySalesTotalSum();
 
+    /**
+     * 配合GetDailySalesTotalSumRange及GetDailySalesTaxSumRange函数，
+     * 设置参数索引值获取区间总和
+     * 该函数根据目前Z报表已有数据计算
+     *
+     * @param start_index 区间起始索引
+     * @param end_idx     区间结束索引
+     * @return ErrCode
+     */
     public native int SetDailySalesTotalSumRangeByIndex(int start_index, int end_idx);
 
-    public native int SetDailySalesTotalSumRangeByDateTime(long start_date, long end_date);
+    /**
+     * 配合GetDailySalesTotalSumRange及GetDailySalesTaxSumRange函数，
+     * 设置参数索引值获取区间总和
+     * 该函数根据目前Z报表已有数据计算
+     *
+     * @param start_date 区间起始索引
+     * @param end_date   区间结束索引
+     * @return ErrCode
+     */
+    private native int SetDailySalesTotalSumRangeByDateTime(long start_date, long end_date);
 
+    /**
+     * 获取区间起始索引计算日销售额区间和,该函数根据目前Z报表已有数据计算
+     * 该函数需要配合SetDailySalesTotalSumRangeByIndex及SetDailySalesTotalSumRangeByDateTime使用     *
+     *
+     * @return 日销售额区间总和
+     */
     public native long GetDailySalesTotalSumRange();
 
     /************************************
      *    Operation for DailyTaxInfo       *
      ************************************/
+    /**
+     * 获取日销售额总和,该函数根据目前Z报表已有数据计算
+     *
+     * @return 日销售税额总和
+     */
     public native long GetDailySalesTaxSum();
 
+    /**
+     * 获取区间起始索引计算日销售税额区间和,该函数根据目前Z报表已有数据计算
+     * 该函数需要配合SetDailySalesTotalSumRangeByIndex及SetDailySalesTotalSumRangeByDateTime使用     *
+     *
+     * @return 日销售税额区间总和
+     */
     public native long GetDailySalesTaxSumRange();
 
     // Error Codes

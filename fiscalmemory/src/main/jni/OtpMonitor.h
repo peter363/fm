@@ -22,9 +22,11 @@ private:
     static bool m_OpenFlag;
     str_fmInfo m_FmInfo;
     uint8_t *m_map;
+    uint8_t *m_map_mask;
+    bool OtpMonitor_TestSyncMapped(uint32_t addr);
+    void OtpMonitor_SetMapMask(uint32_t addr);
     ProtocolParser m_dev;
     void OtpMonitor_SyncMap();
-    void OtpMonitor_SyncMapByArea(uint32_t addr, uint32_t len);
 public:
     OtpMonitor();
     ~OtpMonitor();
@@ -32,6 +34,7 @@ public:
     void Close();
     bool IsInited();
     str_fmInfo GetFmInfo();
+    void OtpMonitor_SyncMapByArea(uint32_t addr, uint32_t len);
     int32_t ReadByte(uint32_t addr, uint8_t &rd_byte);
     int32_t ReadData(uint32_t addr, void * rd_buf, uint32_t rd_len);
     int32_t WriteData(uint32_t addr, void const* wr_buf, uint32_t wr_len);
