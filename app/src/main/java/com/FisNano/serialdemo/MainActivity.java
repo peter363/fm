@@ -44,11 +44,14 @@ public class MainActivity extends Activity {
     private static final int HANDLER_READ_COMPLETE = 4;
     private static final int HANDLER_READ_COMPARE = 5;
     private static final int HANDLER_READ_COMPARE_COMPLETE = 6;
+    private static final int HANDLER_LOOPFUNC_PRINT_CONTENT = 7;
 
     TextView m_ConsoleText;
     ScrollView m_ScrollView;
     FiscalMemory m_FiscalFmemory;
     String oriContent = null;
+
+    int loopFuncCount = 0;
 
     List<ZReportEntry> cacheZReportEntrys = new ArrayList<ZReportEntry>();
 
@@ -101,6 +104,16 @@ public class MainActivity extends Activity {
                 }
             } else if (HANDLER_READ_COMPARE_COMPLETE == msg.what) {
                 m_ConsoleText.setText(m_ConsoleText.getText().toString() + "Complete...\n");
+            } else if (HANDLER_LOOPFUNC_PRINT_CONTENT == msg.what) {
+                oriContent = m_ConsoleText.getText().toString();
+
+                String text = (String) msg.obj;
+
+                loopFuncCount++;
+
+                m_ConsoleText.setText(getString(R.string.fmt_loopfunc, oriContent, loopFuncCount, text));
+
+                m_ScrollView.fullScroll(ScrollView.FOCUS_DOWN);
             }
         }
     };
@@ -539,6 +552,7 @@ public class MainActivity extends Activity {
                 return;
             case R.id.btn_write_loop_z_report_stop:
                 stop = true;
+                loopCount = -1;
                 break;
             case R.id.btn_read_all_z_report:
                 loopReadAllZReportEntry();
@@ -547,6 +561,12 @@ public class MainActivity extends Activity {
             case R.id.btn_read_range_compared_z_report:
                 loopReadZReportEntry2Compared();
                 return;
+
+            case R.id.btn_loop_test:
+
+                loopAllFuncTest();
+
+                break;
 
             default:
                 return;
@@ -628,11 +648,11 @@ public class MainActivity extends Activity {
                             if (bytes != null) {
                                 ZReportEntry zReportEntry = ZReportEntry.parseEntry(bytes);
                                 cacheZReportEntrys.add(zReportEntry);
-                                zReportEntry.setTest_index(loopCount);
-                                Message message = mHandler.obtainMessage();
-                                message.what = HANDLER_READ_SUCCEED;
-                                message.obj = zReportEntry;
-                                mHandler.sendMessage(message);
+//                                zReportEntry.setTest_index(loopCount);
+//                                Message message = mHandler.obtainMessage();
+//                                message.what = HANDLER_READ_SUCCEED;
+//                                message.obj = zReportEntry;
+//                                mHandler.sendMessage(message);
                             } else {
 
                             }
@@ -845,4 +865,335 @@ public class MainActivity extends Activity {
                     "0100", "0101", "0110", "0111",
                     "1000", "1001", "1010", "1011",
                     "1100", "1101", "1110", "1111"};
+
+    //---------------------------------------------------------------------------
+
+    private void loopAllFuncTest() {
+        new Thread() {
+            @Override
+            public void run() {
+                loopFuncCount = 0;
+                String sendMesg = "Opening...";
+                Message msg = mHandler.obtainMessage();
+                msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                msg.obj = sendMesg;
+                mHandler.sendMessage(msg);
+
+                String tpmStr = "Open FiscalFmemory: ";
+                boolean result = m_FiscalFmemory.Open();
+                if (result) {
+                    tpmStr += "Success";
+                } else {
+                    tpmStr += "Fail";
+                }
+                msg = mHandler.obtainMessage();
+                msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                msg.obj = tpmStr;
+                mHandler.sendMessage(msg);
+
+                if (!result) {
+                    return;
+                }
+
+                String OutStr = null;
+
+                int ret = m_FiscalFmemory.EraseCard();
+                if (ret >= 0) {
+                    OutStr = "EraseCard Success";
+                } else {
+                    OutStr = "EraseCard Fail " + ret;
+                }
+                msg = mHandler.obtainMessage();
+                msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                msg.obj = OutStr;
+                mHandler.sendMessage(msg);
+
+                //工厂模式
+                m_FiscalFmemory.SetMode(false);
+                msg = mHandler.obtainMessage();
+                msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                msg.obj = "SetMode:false";
+                mHandler.sendMessage(msg);
+
+                //--------------------------------------------
+
+                test();
+
+                //--------------------------------------------
+
+                //用户模式
+                m_FiscalFmemory.SetMode(true);
+                msg = mHandler.obtainMessage();
+                msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                msg.obj = "SetMode:true";
+                mHandler.sendMessage(msg);
+
+                test();
+
+            }
+        }.start();
+    }
+
+    private void test() {
+
+        String OutStr = null;
+        loopFuncCount = 0;
+        int ret = -1;
+
+
+        String mGetFirmwareInfo = m_FiscalFmemory.GetFirmwareInfo();
+        if (mGetFirmwareInfo != null) {
+            OutStr += "FirmwareInfo is:" + mGetFirmwareInfo;
+        } else {
+            OutStr += "FirmwareInfo Test Fail";
+        }
+        Message msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = OutStr;
+        mHandler.sendMessage(msg);
+
+        //--------------------------------------------
+        boolean b = m_FiscalFmemory.GetFullStatus();
+        OutStr = b ? "FiscalMemory is full" : "FiscalMemory have space";
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = OutStr;
+        mHandler.sendMessage(msg);
+
+        //--------------------------------------------
+        int i1 = m_FiscalFmemory.GetFreeEntries();
+
+        int loopCountZ = i1;
+
+        OutStr = "Z Report Free space:" + i1;
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = OutStr;
+        mHandler.sendMessage(msg);
+
+        //--------------------------------------------
+        int i = m_FiscalFmemory.GetNumberOfEntries();
+        OutStr = "Z Report number:" + i;
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = OutStr;
+        mHandler.sendMessage(msg);
+
+        //--------------------------------------------
+        String fiscalCode = "asdfghjklqwerty";
+        ret = m_FiscalFmemory.SetFiscalCode(fiscalCode.getBytes());
+        OutStr = (ret == FiscalMemory.CMD_OK) ? "SetFiscalCode:Success" : "SetFiscalCode:Fail";
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = OutStr;
+        mHandler.sendMessage(msg);
+
+        //--------------------------------------------
+        String fiscalNum = "123456789012345";
+        ret = m_FiscalFmemory.SetFiscalNumber(fiscalNum.getBytes());
+        OutStr = (ret == FiscalMemory.CMD_OK) ? "SetFiscalNumber:Success" : "SetFiscalNumber:Fail";
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = OutStr;
+        mHandler.sendMessage(msg);
+
+        //--------------------------------------------
+        byte[] fis = m_FiscalFmemory.GetFiscalCode();
+        if (fis != null) {
+            OutStr = "GetFiscalCode:" + new String(fis);
+        } else {
+            OutStr = "GetFiscalCode: NULL";
+        }
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = OutStr;
+        mHandler.sendMessage(msg);
+
+        //--------------------------------------------
+        byte[] fisnum = m_FiscalFmemory.GetFiscalNumber();
+        if (fisnum != null) {
+            OutStr = "GetFiscalNum:" + new String(fisnum);
+        } else {
+            OutStr = "GetFiscalNum: NULL";
+        }
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = OutStr;
+        mHandler.sendMessage(msg);
+
+        //--------------------------------------------
+        String revolvingAmountStr = "zxcvbnmasdfghjk";
+        ret = m_FiscalFmemory.SetFiscalRevolingAmount(revolvingAmountStr.getBytes());
+        OutStr = (ret == FiscalMemory.CMD_OK) ? "SetFiscalRevolingAmount:Success" : "SetFiscalRevolingAmount:Fail";
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = OutStr;
+        mHandler.sendMessage(msg);
+
+        //--------------------------------------------
+        byte[] revolingAmountBytes = m_FiscalFmemory.GetFiscalRevolingAmount();
+        if (revolingAmountBytes != null) {
+            OutStr = "GetFiscalRevolingAmount : " + new String(revolingAmountBytes);
+        } else {
+            OutStr = "GetFiscalRevolingAmount : Empty";
+        }
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = OutStr;
+        mHandler.sendMessage(msg);
+
+        //--------------------------------------------
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = "Writing " + loopCountZ + " times Z report...";
+        mHandler.sendMessage(msg);
+
+        stop = false;
+        loopCount = m_FiscalFmemory.GetNumberOfEntries();
+        cacheZReportEntrys.clear();
+
+        while (loopCount < loopCountZ && !stop && loopCount != -1) {
+            ZReportEntry zReportEntry = createTestReportEntry();
+            byte[] zReportData = zReportEntry.getZReportData();
+            ret = m_FiscalFmemory.SetEntryData(zReportData);
+
+            android.util.Log.e(TAG, "[zys-->SetEntryData] loopCount:" + loopCount);
+
+            if (ret == FiscalMemory.CMD_OK) {
+                cacheZReportEntrys.add(zReportEntry);
+
+                msg = mHandler.obtainMessage();
+                msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                msg.obj = "Writing " + loopCount + " times Z report";
+                mHandler.sendMessage(msg);
+            } else {
+                loopCount = -1;
+                stop = true;
+
+                msg = mHandler.obtainMessage();
+                msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                msg.obj = "Write Z Report Failed.";
+                mHandler.sendMessage(msg);
+                return;
+            }
+            loopCount++;
+            if (loopCount == loopCountZ) {
+                msg = mHandler.obtainMessage();
+                msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                msg.obj = "Write Z Report Complete.";
+                mHandler.sendMessage(msg);
+            }
+        }
+
+        //--------------------------------------------
+
+        msg = mHandler.obtainMessage();
+        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+        msg.obj = "Comparing " + loopCountZ + " times Z report data...";
+        mHandler.sendMessage(msg);
+
+        loopCount = 0;
+        stop = false;
+
+        while (loopCount < loopCountZ && !stop) {
+
+            android.util.Log.e(TAG, "[zys-->GetEntryData] loopCount:" + loopCount);
+
+            ret = m_FiscalFmemory.SetEntryIndex(loopCount);
+            if (ret == FiscalMemory.CMD_OK) {
+                byte[] bytes = m_FiscalFmemory.GetEntryData();
+                if (bytes != null) {
+                    ZReportEntry zReportEntry = ZReportEntry.parseEntry(bytes);
+                    ZReportEntry z = cacheZReportEntrys.get(loopCount);
+                    if (!zReportEntry.equals(z)) {
+                        msg = mHandler.obtainMessage();
+                        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                        msg.obj = "Compare Failed.";
+                        mHandler.sendMessage(msg);
+                        return;
+                    } else {
+                        msg = mHandler.obtainMessage();
+                        msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                        msg.obj = "Comparing index:" + loopCount + " the same.";
+                        mHandler.sendMessage(msg);
+                    }
+                } else {
+                    msg = mHandler.obtainMessage();
+                    msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                    msg.obj = "Compare Failed.";
+                    mHandler.sendMessage(msg);
+                    return;
+                }
+            } else {
+                msg = mHandler.obtainMessage();
+                msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                msg.obj = "Compare Failed.";
+                mHandler.sendMessage(msg);
+                return;
+            }
+
+            loopCount++;
+            if (loopCount == loopCountZ) {
+                msg = mHandler.obtainMessage();
+                msg.what = HANDLER_LOOPFUNC_PRINT_CONTENT;
+                msg.obj = "Compare Complete.";
+                mHandler.sendMessage(msg);
+            }
+        }
+    }
+
+    private ZReportEntry createLoopZReportEntryIncrement(ZReportEntry z) {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.YEAR, z.getYear());
+        c.set(Calendar.MONTH, z.getMonth() - 1);
+        c.set(Calendar.DAY_OF_MONTH, z.getDay());
+        c.set(Calendar.HOUR_OF_DAY, z.getHour());
+        c.set(Calendar.MINUTE, z.getMonth());
+
+        c.add(Calendar.HOUR_OF_DAY, 1);
+
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH) + 1;
+        int day = c.get(Calendar.DAY_OF_MONTH);
+        int hour = c.get(Calendar.HOUR_OF_DAY);
+        int minute = c.get(Calendar.MINUTE);
+
+        z.setYear(year);
+        z.setMonth(month);
+        z.setDay(day);
+        z.setHour(hour);
+        z.setMinute(minute);
+
+        z.setSales_tax(z.getSales_tax() + loopCount);
+        z.setSales_total(z.getSales_total() + loopCount);
+
+        return z;
+    }
+
+    private ZReportEntry createTestReportEntry() {
+
+        int total = loopCount + 1;
+        int tax = loopCount + 1;
+        short serialNum = 123;
+
+        int year = 2018;
+        int month = 1;
+        int day = 1;
+
+        int hour = 0;
+        int minute = 0;
+
+        ZReportEntry zReportEntry = new ZReportEntry();
+        zReportEntry.setSales_total(total);
+        zReportEntry.setSales_tax(tax);
+        zReportEntry.setYear(year);
+        zReportEntry.setMonth(month);
+        zReportEntry.setDay(day);
+        zReportEntry.setHour(hour);
+        zReportEntry.setMinute(minute);
+        zReportEntry.setSerial_number(serialNum);
+
+        return zReportEntry;
+    }
+
 }

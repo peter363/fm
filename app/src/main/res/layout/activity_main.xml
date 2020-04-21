@@ -453,6 +453,17 @@
 
             </LinearLayout>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="@android:color/holo_red_dark" />
+
+            <Button
+                android:id="@+id/btn_loop_test"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="onClick"
+                android:text="Loop All Test" />
 
         </LinearLayout>
     </ScrollView>

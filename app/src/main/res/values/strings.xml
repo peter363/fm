@@ -9,4 +9,6 @@
 
     <string name="fmt_read_zreport">Get index:%1$d, %2$s\n</string>
     <string name="fmt_read_zreport_compare">Get index:%1$d\nRead->%2$s\nCache->%3$s\nequal:%4$s\n</string>
+
+    <string name="fmt_loopfunc">%1$s\nTip->%2$d:%3$s</string>
 </resources>

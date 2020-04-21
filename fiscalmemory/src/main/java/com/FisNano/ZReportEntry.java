@@ -120,7 +120,7 @@ public class ZReportEntry {
         zReportEntry.sales_tax = bytes2int(salesTaxBytes);
 
         byte yearBt = data[8];
-        zReportEntry.year = yearBt + YEAR_BASELINE;
+        zReportEntry.year = yearBt;
 
         byte[] dateAndTime = new byte[3];
         System.arraycopy(data, 9, dateAndTime, 0, 3);
