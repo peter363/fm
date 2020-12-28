@@ -6,7 +6,7 @@ ndk 版本 21.0.6113669（Ctrl + shift + alt + s打开Project Structrue把我们
 #### 软件架构
 软件架构说明
 
-
+12
 #### 安装教程
 
 1.  xxxx
